@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Keuangan MI Muhammadiyah Kertonatan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <?!= include('Styles'); ?>
+  </head>
+
+  <body class="bg-slate-100 font-sans antialiased">
+    <div class="flex h-screen overflow-hidden">
+      <?!= include('Sidebar'); ?>
+
+      <main class="flex-1 overflow-y-auto p-8">
+        <?!= include('ViewDashboard'); ?> <?!= include('ViewPembayaran'); ?>
+        <?!= include('ViewRiwayat'); ?> <?!= include('ViewSiswa'); ?> <?!=
+        include('ViewSettingTagihan'); ?>
+        <!-- TAMBAHKAN INI -->
+        <?!= include('ViewLaporan'); ?> <?!= include('ViewMaster'); ?>
+      </main>
+    </div>
+
+    <?!= include('Modals'); ?> <?!= include('Scripts'); ?>
+  </body>
+</html>

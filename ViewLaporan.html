@@ -1,0 +1,125 @@
+<div id="view-laporan" class="tab-content hidden space-y-6">
+  <div
+    class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+  >
+    <div>
+      <h2 class="text-2xl font-bold text-slate-800">
+        Laporan Rekapitulasi Tunggakan
+      </h2>
+
+      <p class="text-sm text-slate-500">
+        Ringkasan sisa pembayaran yang belum dilunasi per kelas.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <button
+        onclick="loadRekapLaporanJS()"
+        class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-sm transition"
+      >
+        <i class="fa-solid fa-rotate mr-1"></i>
+        Refresh
+      </button>
+
+      <button
+        onclick="exportLaporanJS()"
+        id="btn-export-sheet"
+        class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm transition shadow-md"
+      >
+        <i class="fa-solid fa-file-excel mr-1"></i>
+        Ekspor Sheet
+      </button>
+    </div>
+  </div>
+
+  <!-- FILTER POS -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+      <div class="text-sm font-semibold text-slate-600">
+        <i class="fa-solid fa-filter mr-1"></i>
+        Filter Pos Pembayaran
+      </div>
+
+      <select
+        id="filter-pos-laporan"
+        onchange="loadRekapLaporanJS()"
+        class="flex-1 sm:max-w-md p-2.5 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+      >
+        <option value="ALL">-- Semua Pos Pembayaran --</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+      <span class="text-xs text-slate-500 font-bold uppercase">
+        Total Nominal Tunggakan
+      </span>
+
+      <div
+        id="card-total-tunggakan"
+        class="text-2xl font-black text-rose-600 mt-1"
+      >
+        Rp 0
+      </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+      <span class="text-xs text-slate-500 font-bold uppercase">
+        Total Siswa Menunggak
+      </span>
+
+      <div
+        id="card-total-siswa-nunggak"
+        class="text-2xl font-black text-amber-600 mt-1"
+      >
+        0 Siswa
+      </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+      <span class="text-xs text-slate-500 font-bold uppercase">
+        Kelas Terdampak
+      </span>
+
+      <div
+        id="card-total-kelas"
+        class="text-2xl font-black text-indigo-600 mt-1"
+      >
+        0 Kelas
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div
+    class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+  >
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-50 border-b text-slate-600 font-semibold">
+          <tr>
+            <th class="p-4">Kelas</th>
+            <th class="p-4">Total Siswa</th>
+            <th class="p-4">Siswa Menunggak</th>
+            <th class="p-4">Persentase</th>
+            <th class="p-4 text-right">Total Tunggakan</th>
+          </tr>
+        </thead>
+
+        <tbody id="table-rekap-body" class="divide-y text-slate-700">
+          <tr>
+            <td colspan="5" class="p-8 text-center text-slate-400">
+              <i
+                class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"
+              ></i>
+
+              <p class="text-xs">Memuat rekapitulasi data...</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

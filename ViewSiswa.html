@@ -1,0 +1,243 @@
+<div id="view-siswa" class="tab-content hidden space-y-6">
+  <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+    <div>
+      <h2 class="text-2xl font-bold text-slate-800">Data Siswa</h2>
+      <p class="text-sm text-slate-500">
+        Master data siswa. Bisa export & import Excel.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <button
+        onclick="loadSiswaJS()"
+        class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-sm transition"
+      >
+        <i class="fa-solid fa-rotate mr-1"></i>
+        Refresh
+      </button>
+
+      <button
+        onclick="exportSiswaJS()"
+        class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm transition"
+      >
+        <i class="fa-solid fa-file-excel mr-1"></i>
+        Export Excel
+      </button>
+
+      <button
+        onclick="openImportSiswaJS()"
+        class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm transition"
+      >
+        <i class="fa-solid fa-file-import mr-1"></i>
+        Import Excel
+      </button>
+
+      <button
+        onclick="openSiswaFormJS()"
+        class="px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-sm transition"
+      >
+        <i class="fa-solid fa-plus mr-1"></i>
+        Tambah Siswa
+      </button>
+    </div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+      <div class="flex-1">
+        <input
+          type="text"
+          id="siswa-keyword"
+          onkeyup="handleSiswaKeyup(event)"
+          placeholder="Cari nama, NISN, NIS, kelas..."
+          class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+        />
+      </div>
+      <button
+        onclick="loadSiswaJS()"
+        class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-sm"
+      >
+        <i class="fa-solid fa-search mr-1"></i>
+        Cari
+      </button>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+      <span class="text-xs text-slate-500 font-bold uppercase"
+        >Total Siswa</span
+      >
+      <div id="siswa-total" class="text-2xl font-black text-indigo-600 mt-1">
+        0
+      </div>
+    </div>
+    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+      <span class="text-xs text-slate-500 font-bold uppercase"
+        >Siswa Aktif</span
+      >
+      <div id="siswa-aktif" class="text-2xl font-black text-emerald-600 mt-1">
+        0
+      </div>
+    </div>
+    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+      <span class="text-xs text-slate-500 font-bold uppercase"
+        >Ditampilkan</span
+      >
+      <div
+        id="siswa-ditampilkan"
+        class="text-2xl font-black text-slate-700 mt-1"
+      >
+        0
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div
+    class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+  >
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-50 border-b text-slate-600 font-semibold">
+          <tr>
+            <th class="p-3">ID Siswa</th>
+            <th class="p-3">NISN</th>
+            <th class="p-3">NIS</th>
+            <th class="p-3">Nama Lengkap</th>
+            <th class="p-3">L/P</th>
+            <th class="p-3">Kelas</th>
+            <th class="p-3">Thn Pelajaran</th>
+            <th class="p-3">Status</th>
+            <th class="p-3">Potongan</th>
+            <th class="p-3 text-center">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="table-siswa-body" class="divide-y text-slate-700">
+          <tr>
+            <td colspan="10" class="p-10 text-center text-slate-400">
+              <i
+                class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"
+              ></i>
+              <p class="text-sm">Memuat data siswa...</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FORM SISWA -->
+<div
+  id="modal-siswa-form"
+  class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+>
+  <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-5">
+    <div class="flex justify-between items-start border-b pb-4">
+      <div>
+        <h3 id="siswa-form-title" class="text-xl font-bold text-slate-800">
+          Tambah Siswa
+        </h3>
+        <p class="text-xs text-slate-500 mt-1">
+          Lengkapi data siswa di bawah ini
+        </p>
+      </div>
+      <button
+        onclick="closeSiswaFormJS()"
+        class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form
+      id="siswa-form"
+      class="space-y-4 max-h-[60vh] overflow-y-auto pr-1"
+      onsubmit="return false;"
+    >
+      <!-- fields akan diisi via JS -->
+    </form>
+
+    <div class="flex gap-2 pt-2 border-t">
+      <button
+        id="btn-save-siswa"
+        onclick="saveSiswaJS()"
+        class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-sm"
+      >
+        <i class="fa-solid fa-floppy-disk mr-1"></i>
+        Simpan
+      </button>
+      <button
+        onclick="closeSiswaFormJS()"
+        class="px-5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-sm"
+      >
+        Batal
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMPORT SISWA (FILE EXCEL) -->
+<div
+  id="modal-import-siswa"
+  class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+>
+  <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-5">
+    <div class="flex justify-between items-start border-b pb-4">
+      <div>
+        <h3 class="text-xl font-bold text-slate-800">Import Data Siswa</h3>
+        <p class="text-xs text-slate-500 mt-1">
+          Pilih file Excel (.xlsx / .xls / .csv). Jika
+          <strong>id_siswa</strong> sudah ada → Update, jika belum → Insert.
+        </p>
+      </div>
+      <button
+        onclick="closeImportSiswaJS()"
+        class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div
+      class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-emerald-400 transition"
+    >
+      <i class="fa-solid fa-file-excel text-4xl text-emerald-600 mb-3"></i>
+      <p class="text-sm font-semibold text-slate-700 mb-1">Pilih file Excel</p>
+      <p class="text-xs text-slate-500 mb-4">Format: .xlsx, .xls, atau .csv</p>
+
+      <input
+        type="file"
+        id="import-siswa-file"
+        accept=".xlsx,.xls,.csv"
+        class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+      />
+    </div>
+
+    <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg">
+      <strong>Kolom yang didukung:</strong><br />
+      id_siswa, nisn, nis, nama_lengkap, jenis_kelamin, kelas, tahun_pelajaran,
+      status_siswa, id_potongan_default
+    </div>
+
+    <div class="flex gap-2 pt-2 border-t">
+      <button
+        id="btn-proses-import-siswa"
+        onclick="prosesImportSiswaFileJS()"
+        class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-sm"
+      >
+        <i class="fa-solid fa-file-import mr-1"></i>
+        Proses Import
+      </button>
+      <button
+        onclick="closeImportSiswaJS()"
+        class="px-5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-sm"
+      >
+        Batal
+      </button>
+    </div>
+  </div>
+</div>

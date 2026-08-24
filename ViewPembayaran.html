@@ -1,0 +1,211 @@
+<div id="view-pembayaran" class="tab-content space-y-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <h2 class="text-2xl font-bold text-slate-800">
+        Form Transaksi Pembayaran
+      </h2>
+      <p class="text-sm text-slate-500">
+        Kelola pembayaran tagihan dan cicilan siswa.
+      </p>
+    </div>
+
+    <button
+      onclick="resetFormKasir()"
+      class="text-sm px-3 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-slate-700 font-medium transition"
+    >
+      <i class="fa-solid fa-rotate-left mr-1"></i>
+      Reset Form
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- CARI SISWA -->
+    <div
+      class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4 h-fit"
+    >
+      <h3
+        class="font-bold text-slate-800 border-b pb-2 flex items-center gap-2"
+      >
+        <span
+          class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs"
+        >
+          1
+        </span>
+        Pilih Siswa
+      </h3>
+
+      <div class="relative">
+        <label class="text-xs font-semibold text-slate-600">
+          Cari NISN / NIS / Nama Siswa
+        </label>
+
+        <div class="flex gap-2 mt-1">
+          <input
+            type="text"
+            id="input-search"
+            onkeyup="handleSearchKeyup(event)"
+            placeholder="Ketik nama, NISN atau NIS..."
+            class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+          />
+
+          <button
+            onclick="cariSiswaJS()"
+            class="bg-slate-800 hover:bg-slate-900 text-white px-4 rounded-lg transition text-sm"
+          >
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </div>
+
+        <div
+          id="search-dropdown"
+          class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-30 max-h-64 overflow-y-auto divide-y"
+        ></div>
+      </div>
+
+      <!-- SISWA TERPILIH -->
+      <div
+        id="student-info-box"
+        class="hidden p-4 bg-slate-50 rounded-lg border border-slate-200 text-sm space-y-2"
+      >
+        <div class="flex justify-between items-start">
+          <div>
+            <h4 id="info-nama" class="font-bold text-slate-800 text-base">
+              ---
+            </h4>
+
+            <p id="info-nisn" class="text-xs text-slate-500">
+              NISN: - | NIS: -
+            </p>
+          </div>
+
+          <span
+            id="info-kelas"
+            class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-bold"
+          >
+            Kelas -
+          </span>
+        </div>
+
+        <div class="border-t pt-2 mt-2">
+          <span class="text-xs text-slate-500 block"> Potongan Bawaan </span>
+
+          <span
+            id="info-potongan"
+            class="inline-block mt-0.5 bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-semibold"
+          >
+            Tidak Ada
+          </span>
+        </div>
+      </div>
+
+      <!-- EMPTY -->
+      <div
+        id="student-empty-box"
+        class="p-6 border-2 border-dashed rounded-lg text-center text-slate-400"
+      >
+        <i class="fa-solid fa-user-slash text-3xl mb-2"></i>
+
+        <p class="text-xs">Silakan cari dan pilih siswa terlebih dahulu.</p>
+      </div>
+    </div>
+
+    <!-- TAGIHAN -->
+    <div
+      class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4"
+    >
+      <h3
+        class="font-bold text-slate-800 border-b pb-2 flex items-center justify-between"
+      >
+        <span class="flex items-center gap-2">
+          <span
+            class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs"
+          >
+            2
+          </span>
+
+          Pilih Item Tagihan & Nominal Bayar
+        </span>
+
+        <span
+          id="tagihan-count"
+          class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded font-normal"
+        >
+          0 Item Tagihan
+        </span>
+      </h3>
+
+      <div id="tagihan-container" class="space-y-3 min-h-[220px]">
+        <div
+          class="flex flex-col items-center justify-center h-48 text-slate-400"
+        >
+          <i class="fa-solid fa-receipt text-4xl mb-2"></i>
+
+          <p class="text-sm">Belum ada siswa terpilih</p>
+        </div>
+      </div>
+
+      <!-- PAYMENT OPTIONS -->
+      <div
+        id="payment-options"
+        class="hidden border-t pt-4 grid grid-cols-1 md:grid-cols-2 gap-4"
+      >
+        <div>
+          <label class="text-xs font-semibold text-slate-600">
+            Metode Pembayaran
+          </label>
+
+          <select
+            id="select-metode"
+            class="w-full mt-1 p-2.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+          >
+            <option value="TUNAI">TUNAI / CASH</option>
+            <option value="TRANSFER_BCA">TRANSFER BCA</option>
+            <option value="TRANSFER_BRI">TRANSFER BRI</option>
+            <option value="QRIS">QRIS</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-600">
+            Catatan Kasir
+          </label>
+
+          <input
+            type="text"
+            id="input-catatan"
+            placeholder="Catatan pembayaran..."
+            class="w-full mt-1 p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+          />
+        </div>
+      </div>
+
+      <!-- CHECKOUT -->
+      <div id="checkout-box" class="hidden border-t pt-4 space-y-3">
+        <div class="flex justify-between text-sm text-slate-600">
+          <span>Total Item Dipilih</span>
+          <span id="summary-items-count" class="font-semibold text-slate-800">
+            0 Item
+          </span>
+        </div>
+
+        <div
+          class="flex justify-between text-xl font-black text-slate-900 border-t pt-2"
+        >
+          <span>Total Bayar Sekarang</span>
+
+          <span id="summary-total-bayar" class="text-emerald-600"> Rp 0 </span>
+        </div>
+
+        <button
+          id="btn-submit-bayar"
+          onclick="prosesBayarJS()"
+          disabled
+          class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl shadow-lg transition flex items-center justify-center gap-2"
+        >
+          <i class="fa-solid fa-floppy-disk"></i>
+          Simpan & Proses Kuitansi
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

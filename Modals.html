@@ -1,0 +1,401 @@
+<!-- ======================================================
+     MODAL DETAIL TRANSAKSI
+======================================================= -->
+<div
+  id="modal-detail-transaksi"
+  class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+>
+  <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-5">
+    <div class="flex justify-between items-start border-b pb-4">
+      <div>
+        <h3 class="text-xl font-bold text-slate-800">Detail Transaksi</h3>
+
+        <p id="detail-id-transaksi" class="text-xs text-slate-500 mt-1">-</p>
+      </div>
+
+      <button
+        onclick="closeDetailTransaksiJS()"
+        class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="bg-slate-50 rounded-lg p-3">
+        <span class="text-[10px] text-slate-500 block"> No. Kuitansi </span>
+
+        <span id="detail-no-kuitansi" class="font-bold text-sm text-slate-800">
+          -
+        </span>
+      </div>
+
+      <div class="bg-slate-50 rounded-lg p-3">
+        <span class="text-[10px] text-slate-500 block"> Tanggal </span>
+
+        <span id="detail-tanggal" class="font-bold text-sm text-slate-800">
+          -
+        </span>
+      </div>
+
+      <div class="bg-slate-50 rounded-lg p-3">
+        <span class="text-[10px] text-slate-500 block"> Metode </span>
+
+        <span id="detail-metode" class="font-bold text-sm text-slate-800">
+          -
+        </span>
+      </div>
+
+      <div class="bg-slate-50 rounded-lg p-3">
+        <span class="text-[10px] text-slate-500 block"> Kasir </span>
+
+        <span id="detail-kasir" class="font-bold text-sm text-slate-800">
+          -
+        </span>
+      </div>
+    </div>
+
+    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+      <div class="flex justify-between items-start">
+        <div>
+          <div id="detail-nama-siswa" class="font-bold text-emerald-900">-</div>
+
+          <div
+            id="detail-identitas-siswa"
+            class="text-xs text-emerald-700 mt-1"
+          >
+            -
+          </div>
+        </div>
+
+        <span
+          id="detail-status"
+          class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold"
+        >
+          SELESAI
+        </span>
+      </div>
+    </div>
+
+    <div>
+      <h4 class="font-bold text-slate-800 mb-3">Rincian Pembayaran</h4>
+
+      <div class="border border-slate-200 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 border-b">
+              <tr>
+                <th class="p-3 text-left">Item</th>
+                <th class="p-3 text-right">Diskon</th>
+                <th class="p-3 text-right">Dibayar</th>
+              </tr>
+            </thead>
+
+            <tbody id="detail-items-body" class="divide-y"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t pt-4">
+      <div class="flex justify-between items-center">
+        <span class="font-bold text-slate-700"> TOTAL PEMBAYARAN </span>
+
+        <span
+          id="detail-total-bayar"
+          class="text-xl font-black text-emerald-600"
+        >
+          Rp 0
+        </span>
+      </div>
+
+      <div
+        id="detail-catatan-wrapper"
+        class="hidden mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm"
+      >
+        <span class="font-semibold text-amber-800"> Catatan: </span>
+
+        <span id="detail-catatan" class="text-amber-700"> </span>
+      </div>
+    </div>
+
+    <div class="flex gap-2 pt-2">
+      <button
+        onclick="cetakKuitansiDariDetailJS()"
+        class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-sm transition"
+      >
+        <i class="fa-solid fa-print mr-1"></i>
+        Cetak Kuitansi
+      </button>
+
+      <button
+        onclick="closeDetailTransaksiJS()"
+        class="px-5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-sm"
+      >
+        Tutup
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================
+     MODAL KUITANSI
+======================================================= -->
+<div
+  id="modal-kuitansi"
+  class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+>
+  <div
+    class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4 print:p-0 print:shadow-none print:w-full"
+  >
+    <div
+      id="printable-receipt"
+      class="bg-white p-4 font-mono text-xs text-slate-800 border border-dashed border-slate-300 rounded-lg space-y-3"
+    >
+      <div class="text-center border-b border-dashed border-slate-400 pb-3">
+        <h3 class="font-bold text-sm uppercase text-slate-900">
+          MI MUHAMMADIYAH KERTONATAN
+        </h3>
+
+        <p class="text-[10px] text-slate-600">Bukti Pembayaran Keuangan</p>
+
+        <p class="text-[10px] text-slate-600">Tahun Pelajaran 2026/2027</p>
+      </div>
+
+      <div
+        class="space-y-1 text-[11px] border-b border-dashed border-slate-400 pb-2"
+      >
+        <div class="flex justify-between">
+          <span class="text-slate-500">No. Kuitansi:</span>
+          <span id="kw-no" class="font-bold">-</span>
+        </div>
+
+        <div class="flex justify-between">
+          <span class="text-slate-500">Tanggal:</span>
+          <span id="kw-tgl">-</span>
+        </div>
+
+        <div class="flex justify-between">
+          <span class="text-slate-500">Kasir:</span>
+          <span id="kw-kasir">-</span>
+        </div>
+      </div>
+
+      <div
+        class="space-y-1 text-[11px] border-b border-dashed border-slate-400 pb-2"
+      >
+        <div class="flex justify-between gap-3">
+          <span class="text-slate-500"> Siswa: </span>
+
+          <span id="kw-siswa-nama" class="font-bold text-right"> - </span>
+        </div>
+
+        <div class="flex justify-between gap-3">
+          <span class="text-slate-500"> NISN / Kelas: </span>
+
+          <span id="kw-siswa-nisn" class="text-right"> - </span>
+        </div>
+      </div>
+
+      <div class="space-y-2 py-1">
+        <div
+          class="font-bold text-[10px] text-slate-500 uppercase border-b pb-1"
+        >
+          Detail Pembayaran
+        </div>
+
+        <div id="kw-items-list" class="space-y-1.5"></div>
+      </div>
+
+      <div
+        class="border-t border-dashed border-slate-400 pt-2 space-y-1 text-[11px]"
+      >
+        <div class="flex justify-between font-bold text-sm text-slate-900 pt-1">
+          <span> TOTAL BAYAR: </span>
+
+          <span id="kw-total"> Rp 0 </span>
+        </div>
+
+        <div class="flex justify-between text-slate-600">
+          <span> Metode Bayar: </span>
+
+          <span id="kw-metode" class="font-semibold"> TUNAI </span>
+        </div>
+
+        <div
+          id="kw-catatan-container"
+          class="hidden text-slate-500 italic text-[10px] pt-1"
+        >
+          Catatan:
+          <span id="kw-catatan">-</span>
+        </div>
+      </div>
+
+      <div class="text-center pt-3 border-t border-dashed border-slate-400">
+        <p class="font-bold text-[11px]">*** TERIMA KASIH ***</p>
+
+        <p class="text-[9px] text-slate-500">
+          Simpan kuitansi ini sebagai bukti pembayaran sah.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex gap-2 print:hidden pt-2">
+      <button
+        onclick="window.print()"
+        class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-sm"
+      >
+        <i class="fa-solid fa-print"></i>
+        Cetak Nota
+      </button>
+
+      <button
+        onclick="closeModalKuitansi()"
+        class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-sm"
+      >
+        Tutup
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL SISWA MENUNGGAK -->
+<div
+  id="modal-tunggakan-kelas"
+  class="fixed inset-0 z-[9999] hidden items-center justify-center p-4"
+>
+  <!-- Overlay -->
+  <div
+    class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+    onclick="tutupModalTunggakanKelas()"
+  ></div>
+
+  <!-- Modal -->
+  <div
+    class="relative bg-white w-full max-w-5xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+  >
+    <!-- Header -->
+    <div
+      class="px-6 py-5 border-b border-slate-200 bg-white flex items-center justify-between gap-4"
+    >
+      <div>
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center"
+          >
+            <i class="fa-solid fa-users"></i>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-black text-slate-800">Siswa Menunggak</h3>
+
+            <p
+              id="modal-tunggakan-subtitle"
+              class="text-xs text-slate-500 mt-0.5"
+            >
+              Memuat data...
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          onclick="printModalTunggakan()"
+          class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition flex items-center gap-2"
+          title="Cetak laporan"
+        >
+          <i class="fa-solid fa-print"></i>
+          <span class="hidden sm:inline">Print</span>
+        </button>
+
+        <button
+          type="button"
+          onclick="exportModalTunggakanExcel()"
+          class="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition flex items-center gap-2"
+          title="Export ke Excel"
+        >
+          <i class="fa-solid fa-file-excel"></i>
+          <span class="hidden sm:inline">Excel</span>
+        </button>
+
+        <button
+          type="button"
+          onclick="tutupModalTunggakanKelas()"
+          class="w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition flex items-center justify-center"
+          title="Tutup"
+        >
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div
+      id="modal-tunggakan-summary"
+      class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-5 bg-slate-50 border-b border-slate-200"
+    >
+      <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-xs text-slate-500 font-bold uppercase">
+          Siswa Menunggak
+        </div>
+        <div
+          id="modal-total-siswa"
+          class="text-xl font-black text-amber-600 mt-1"
+        >
+          0 Siswa
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-xs text-slate-500 font-bold uppercase">
+          Sudah Dibayar
+        </div>
+        <div
+          id="modal-total-dibayar"
+          class="text-xl font-black text-emerald-600 mt-1"
+        >
+          Rp 0
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-xs text-slate-500 font-bold uppercase">
+          Total Tunggakan
+        </div>
+        <div
+          id="modal-total-sisa"
+          class="text-xl font-black text-rose-600 mt-1"
+        >
+          Rp 0
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div
+      id="modal-tunggakan-content"
+      class="flex-1 overflow-y-auto p-5 space-y-4"
+    >
+      <div class="py-12 text-center text-slate-400">
+        <i class="fa-solid fa-circle-notch animate-spin text-2xl mb-3"></i>
+        <p class="text-sm">Memuat data siswa...</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div
+      class="px-5 py-4 border-t border-slate-200 bg-slate-50 flex justify-end"
+    >
+      <button
+        type="button"
+        onclick="tutupModalTunggakanKelas()"
+        class="px-5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-sm font-bold transition"
+      >
+        Tutup
+      </button>
+    </div>
+  </div>
+</div>

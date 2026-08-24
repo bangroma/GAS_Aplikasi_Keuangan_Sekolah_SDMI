@@ -1,0 +1,412 @@
+<div id="view-setting-tagihan" class="tab-content hidden space-y-6">
+  <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+    <div>
+      <h2 class="text-2xl font-bold text-slate-800">Setting Tagihan Siswa</h2>
+      <p class="text-sm text-slate-500">
+        Generate tagihan sekaligus untuk banyak siswa (per kelas).
+      </p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <!-- FORM SETTING -->
+    <div
+      class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-5 h-fit"
+    >
+      <h3
+        class="font-bold text-slate-800 border-b pb-2 flex items-center gap-2"
+      >
+        <span
+          class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs"
+          >1</span
+        >
+        Pengaturan Tagihan
+      </h3>
+
+      <!-- Pilih Kelas -->
+      <div>
+        <label class="text-xs font-semibold text-slate-600">Pilih Kelas</label>
+        <select
+          id="setting-kelas"
+          onchange="loadSiswaByKelasJS()"
+          class="w-full mt-1 p-2.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+        >
+          <option value="">-- Pilih Kelas --</option>
+        </select>
+      </div>
+
+      <!-- Pos Pembayaran -->
+      <div>
+        <label class="text-xs font-semibold text-slate-600"
+          >Pos Pembayaran</label
+        >
+        <select
+          id="setting-pos"
+          class="w-full mt-1 p-2.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+        >
+          <option value="">-- Pilih Pos --</option>
+        </select>
+      </div>
+
+      <!-- Periode -->
+      <div>
+        <label class="text-xs font-semibold text-slate-600">Periode</label>
+        <input
+          type="text"
+          id="setting-periode"
+          placeholder="Contoh: Agustus 2026 / 2026-08"
+          class="w-full mt-1 p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+        />
+      </div>
+
+      <!-- Nominal -->
+      <div>
+        <label class="text-xs font-semibold text-slate-600"
+          >Nominal Tagihan</label
+        >
+        <input
+          type="number"
+          id="setting-nominal"
+          placeholder="0 (kosongkan = pakai tarif default)"
+          min="0"
+          class="w-full mt-1 p-2.5 border rounded-lg text-sm font-bold text-emerald-700 focus:ring-2 focus:ring-emerald-500 outline-none"
+        />
+      </div>
+
+      <!-- Bisa Dicicil -->
+      <div class="flex items-center gap-3">
+        <input
+          type="checkbox"
+          id="setting-bisa-dicicil"
+          class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+        />
+        <label
+          for="setting-bisa-dicicil"
+          class="text-sm text-slate-700 font-medium cursor-pointer"
+        >
+          Bisa Dicicil
+        </label>
+      </div>
+
+      <!-- Catatan -->
+      <div>
+        <label class="text-xs font-semibold text-slate-600"
+          >Catatan (opsional)</label
+        >
+        <input
+          type="text"
+          id="setting-catatan"
+          placeholder="Catatan tagihan..."
+          class="w-full mt-1 p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+        />
+      </div>
+
+      <button
+        id="btn-generate-tagihan"
+        onclick="generateTagihanMassalJS()"
+        disabled
+        class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl shadow-lg transition flex items-center justify-center gap-2"
+      >
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        Generate Tagihan
+      </button>
+    </div>
+
+    <!-- DAFTAR SISWA -->
+    <div
+      class="xl:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4"
+    >
+      <div
+        class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3"
+      >
+        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+          <span
+            class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs"
+            >2</span
+          >
+          Pilih Siswa
+        </h3>
+
+        <div class="flex items-center gap-3">
+          <label
+            class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer"
+          >
+            <input
+              type="checkbox"
+              id="setting-check-all"
+              onchange="toggleCheckAllSiswaJS()"
+              class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+            />
+            Pilih Semua
+          </label>
+          <span
+            id="setting-siswa-count"
+            class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-semibold"
+          >
+            0 dipilih
+          </span>
+        </div>
+      </div>
+
+      <div id="setting-siswa-container" class="min-h-[320px]">
+        <div
+          class="flex flex-col items-center justify-center h-64 text-slate-400"
+        >
+          <i class="fa-solid fa-users text-4xl mb-3"></i>
+          <p class="text-sm">Pilih kelas terlebih dahulu</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== RIWAYAT SETTING TAGIHAN ===================== -->
+  <div
+    class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+  >
+    <div
+      class="px-5 py-4 border-b bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+    >
+      <div>
+        <h3 class="font-bold text-slate-800">Riwayat Setting Tagihan</h3>
+        <p class="text-xs text-slate-500 mt-0.5">10 data terbaru per halaman</p>
+      </div>
+      <button
+        id="btn-refresh-riwayat-setting"
+        onclick="refreshRiwayatSettingAktif()"
+        class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg text-sm transition"
+      >
+        <i class="fa-solid fa-rotate mr-1"></i>
+        Refresh
+      </button>
+    </div>
+
+    <!-- TAB NAVIGATION -->
+    <div class="flex border-b bg-white">
+      <button
+        id="tab-riwayat-kelas"
+        onclick="switchRiwayatSettingTab('kelas')"
+        class="flex-1 sm:flex-none px-5 py-3.5 text-sm font-semibold border-b-2 border-emerald-600 text-emerald-700 bg-emerald-50/50 transition"
+      >
+        <i class="fa-solid fa-layer-group mr-2"></i>
+        Berdasarkan Kelas
+      </button>
+      <button
+        id="tab-riwayat-siswa"
+        onclick="switchRiwayatSettingTab('siswa')"
+        class="flex-1 sm:flex-none px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition"
+      >
+        <i class="fa-solid fa-user-graduate mr-2"></i>
+        Berdasarkan Siswa
+      </button>
+    </div>
+
+    <!-- ==================== TAB 1: BERDASARKAN KELAS ==================== -->
+    <div id="riwayat-tab-kelas" class="riwayat-setting-panel">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-white border-b text-slate-600 font-semibold">
+            <tr>
+              <th class="p-4 whitespace-nowrap">Tanggal</th>
+              <th class="p-4">Kelas</th>
+              <th class="p-4">Pos / Periode</th>
+              <th class="p-4 text-center">Jumlah Siswa</th>
+              <th class="p-4 text-right">Nominal / Siswa</th>
+              <th class="p-4 text-right">Total Tagihan</th>
+              <th class="p-4 text-center">Status</th>
+              <th class="p-4 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="table-riwayat-kelas-body" class="divide-y text-slate-700">
+            <tr>
+              <td colspan="8" class="p-10 text-center text-slate-400">
+                <i
+                  class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"
+                ></i>
+                <p class="text-sm">Memuat riwayat...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION KELAS -->
+      <div
+        id="riwayat-kelas-pagination"
+        class="px-5 py-4 border-t bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 hidden"
+      >
+        <div id="riwayat-kelas-info" class="text-sm text-slate-600">
+          Menampilkan 0 dari 0 data
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            id="btn-riwayat-kelas-prev"
+            type="button"
+            onclick="goRiwayatKelasPrev()"
+            class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled
+          >
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <span
+            id="riwayat-kelas-page-info"
+            class="text-sm font-semibold text-slate-700 px-2"
+          >
+            1 / 1
+          </span>
+          <button
+            id="btn-riwayat-kelas-next"
+            type="button"
+            onclick="goRiwayatKelasNext()"
+            class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled
+          >
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 2: BERDASARKAN SISWA ==================== -->
+    <div id="riwayat-tab-siswa" class="riwayat-setting-panel hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-white border-b text-slate-600 font-semibold">
+            <tr>
+              <th class="p-4 whitespace-nowrap">Tanggal</th>
+              <th class="p-4 whitespace-nowrap">ID Tagihan</th>
+              <th class="p-4">Siswa</th>
+              <th class="p-4">Kelas</th>
+              <th class="p-4">Pos / Periode</th>
+              <th class="p-4 text-right">Nominal</th>
+              <th class="p-4 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody
+            id="table-riwayat-setting-body"
+            class="divide-y text-slate-700"
+          >
+            <tr>
+              <td colspan="7" class="p-10 text-center text-slate-400">
+                <i
+                  class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"
+                ></i>
+                <p class="text-sm">Memuat riwayat...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION SISWA -->
+      <div
+        id="riwayat-setting-pagination"
+        class="px-5 py-4 border-t bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 hidden"
+      >
+        <div id="riwayat-setting-info" class="text-sm text-slate-600">
+          Menampilkan 0 dari 0 data
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            id="btn-riwayat-prev"
+            type="button"
+            onclick="goRiwayatSiswaPrev()"
+            class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+
+          <span
+            id="riwayat-setting-page-info"
+            class="text-sm font-semibold text-slate-700 px-2"
+          >
+            1 / 1
+          </span>
+
+          <button
+            id="btn-riwayat-next"
+            type="button"
+            onclick="goRiwayatSiswaNext()"
+            class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PROGRESS GENERATE -->
+<div
+  id="modal-generate-progress"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 p-4"
+>
+  <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+    <div class="mb-5 flex items-center gap-3">
+      <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-slate-800">Memproses Tagihan</h3>
+        <p id="generate-progress-subtitle" class="text-xs text-slate-500">
+          Menyiapkan data siswa...
+        </p>
+      </div>
+    </div>
+
+    <div class="mb-2 flex items-center justify-between text-xs font-semibold text-slate-600">
+      <span id="generate-progress-status">Memproses...</span>
+      <span id="generate-progress-label">0%</span>
+    </div>
+    <div class="h-3 overflow-hidden rounded-full bg-slate-200">
+      <div
+        id="generate-progress-bar"
+        class="h-full rounded-full bg-emerald-500 transition-all duration-500"
+        style="width: 0%"
+      ></div>
+    </div>
+    <p id="generate-progress-count" class="mt-3 text-center text-xs text-slate-500">
+      0 siswa
+    </p>
+  </div>
+</div>
+
+<!-- MODAL PROGRESS HAPUS -->
+<div
+  id="modal-hapus-progress"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40"
+>
+  <div class="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6 space-y-4">
+    <div class="flex items-center gap-3">
+      <div
+        class="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center"
+      >
+        <i class="fa-solid fa-trash"></i>
+      </div>
+      <div>
+        <h4 class="font-bold text-slate-800">Menghapus Tagihan</h4>
+        <p id="hapus-progress-subtitle" class="text-xs text-slate-500">
+          Memproses...
+        </p>
+      </div>
+    </div>
+
+    <div>
+      <div class="flex justify-between text-xs text-slate-600 mb-1.5">
+        <span id="hapus-progress-label">0%</span>
+        <span id="hapus-progress-count">0 / 0</span>
+      </div>
+      <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+        <div
+          id="hapus-progress-bar"
+          class="h-full bg-red-500 rounded-full transition-all duration-300 ease-out"
+          style="width: 0%"
+        ></div>
+      </div>
+    </div>
+
+    <p id="hapus-progress-status" class="text-xs text-slate-500 text-center">
+      Mohon tunggu, jangan tutup sidebar...
+    </p>
+  </div>
+</div>

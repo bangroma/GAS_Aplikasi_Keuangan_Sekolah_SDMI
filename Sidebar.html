@@ -1,0 +1,77 @@
+<aside class="w-64 bg-slate-800 text-white flex flex-col shrink-0">
+  <div
+    class="p-5 text-xl font-bold border-b border-slate-700 flex items-center gap-2"
+  >
+    <i class="fa-solid fa-school text-emerald-400"></i>
+    <span>Keuangan MI MIKER</span>
+  </div>
+
+  <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
+    <button
+      onclick="switchTab('dashboard')"
+      id="nav-dashboard"
+      class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition hover:bg-slate-700 text-slate-300"
+    >
+      <i class="fa-solid fa-chart-line w-5"></i>
+      Dashboard
+    </button>
+
+    <button
+      onclick="switchTab('pembayaran')"
+      id="nav-pembayaran"
+      class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition bg-emerald-600 text-white font-semibold"
+    >
+      <i class="fa-solid fa-cash-register w-5"></i>
+      Kasir / Bayar
+    </button>
+
+    <button
+      onclick="switchTab('riwayat')"
+      id="nav-riwayat"
+      class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition hover:bg-slate-700 text-slate-300"
+    >
+      <i class="fa-solid fa-clock-rotate-left w-5"></i>
+      Riwayat Transaksi
+    </button>
+
+    <button
+      onclick="switchTab('siswa')"
+      id="nav-siswa"
+      class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition hover:bg-slate-700 text-slate-300"
+    >
+      <i class="fa-solid fa-user-graduate w-5"></i>
+      Data Siswa
+    </button>
+
+    <!-- MENU BARU -->
+    <button
+      onclick="switchTab('master')"
+      id="nav-master"
+      class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition hover:bg-slate-700 text-slate-300"
+    >
+      <i class="fa-solid fa-database w-5"></i>
+      Master Data
+    </button>
+    <button
+      onclick="switchTab('setting-tagihan')"
+      id="nav-setting-tagihan"
+      class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition hover:bg-slate-700 text-slate-300"
+    >
+      <i class="fa-solid fa-file-invoice w-5"></i>
+      Setting Tagihan
+    </button>
+
+    <button
+      onclick="switchTab('laporan')"
+      id="nav-laporan"
+      class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition hover:bg-slate-700 text-slate-300"
+    >
+      <i class="fa-solid fa-file-invoice-dollar w-5"></i>
+      Laporan Tunggakan
+    </button>
+  </nav>
+
+  <div class="p-4 border-t border-slate-700 text-xs text-slate-400 text-center">
+    v1.1.0 &bull; Google Apps Script
+  </div>
+</aside>
