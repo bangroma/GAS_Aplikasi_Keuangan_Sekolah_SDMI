@@ -1,4 +1,4 @@
-  <script>
+<script>
   let selectedSiswa = null;
   let listTagihanSiswa = [];
   let detailTransaksiAktif = null;
@@ -7,6 +7,7 @@
   let currentModalTunggakanPos = "ALL";
   let currentModalTunggakanData = [];
   let currentDetailSiswaMenunggak = null;
+
 
   /* ========================================================
    UTILITIES
@@ -22,11 +23,16 @@
 
   function escapeHtml(value) {
     return String(value ?? "")
-      .split("&").join("&amp;")
-      .split("<").join("&lt;")
-      .split(">").join("&gt;")
-      .split('"').join("&quot;")
-      .split("'").join("&#039;");
+      .split("&")
+      .join("&amp;")
+      .split("<")
+      .join("&lt;")
+      .split(">")
+      .join("&gt;")
+      .split('"')
+      .join("&quot;")
+      .split("'")
+      .join("&#039;");
   }
 
   function getLabelMetodePembayaran(metode) {
@@ -44,7 +50,12 @@
 
   function showNotification(message, icon) {
     return Swal.fire({
-      title: icon === "success" ? "Berhasil" : icon === "error" ? "Gagal" : "Informasi",
+      title:
+        icon === "success"
+          ? "Berhasil"
+          : icon === "error"
+            ? "Gagal"
+            : "Informasi",
       text: String(message ?? ""),
       icon: icon || "info",
       confirmButtonText: "OK",
@@ -111,15 +122,15 @@
     if (tabName === "setting-tagihan") {
       loadOptionsSettingTagihan();
       loadRiwayatSettingTagihanJS(1);
-      switchRiwayatSettingTab('kelas');
+      switchRiwayatSettingTab("kelas");
     }
     if (tabName === "siswa") {
-  loadSiswaJS();
-}
+      loadSiswaJS();
+    }
 
     if (tabName === "master") {
-  switchMasterTab(currentMasterSheet || "Master_Pos");
-}
+      switchMasterTab(currentMasterSheet || "Master_Pos");
+    }
   }
   /* ========================================================
    CARI SISWA
@@ -1179,7 +1190,6 @@
       })
 
       .getPosPembayaranList();
-
   }
 
   /* ========================================================
@@ -1846,8 +1856,9 @@
       printWindow.print();
     };
 
-    const detailRows = (siswa.tagihan || []).map(function (t, index) {
-      return `
+    const detailRows = (siswa.tagihan || [])
+      .map(function (t, index) {
+        return `
         <tr>
           <td>${index + 1}</td>
           <td>${escapeHtmlLaporan(t.nama_item || "Tagihan")}${t.periode ? " (" + escapeHtmlLaporan(t.periode) + ")" : ""}</td>
@@ -1856,7 +1867,8 @@
           <td class="money">${formatRupiah(t.terbayar)}</td>
           <td class="money">${formatRupiah(t.sisa_tunggakan)}</td>
         </tr>`;
-    }).join("");
+      })
+      .join("");
 
     printWindow.document.write(`
       <!doctype html><html><head><meta charset="UTF-8">
@@ -1912,11 +1924,16 @@
    */
   function escapeHtmlLaporan(value) {
     return String(value == null ? "" : value)
-      .split("&").join("&amp;")
-      .split("<").join("&lt;")
-      .split(">").join("&gt;")
-      .split('"').join("&quot;")
-      .split("'").join("&#039;");
+      .split("&")
+      .join("&amp;")
+      .split("<")
+      .join("&lt;")
+      .split(">")
+      .join("&gt;")
+      .split('"')
+      .join("&quot;")
+      .split("'")
+      .join("&#039;");
   }
 
   /**
@@ -1924,7 +1941,9 @@
    */
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") {
-      const detailModal = document.getElementById("modal-detail-siswa-menunggak");
+      const detailModal = document.getElementById(
+        "modal-detail-siswa-menunggak",
+      );
       if (detailModal && !detailModal.classList.contains("hidden")) {
         tutupModalDetailSiswaMenunggakJS();
         return;
@@ -2749,12 +2768,17 @@ ${siswaHtml}
         if (!select) return;
 
         select.innerHTML = `<option value="">-- Gunakan Potongan Default Siswa --</option><option value="NONE">Tanpa Potongan</option>`;
-        const listPotongan = result && result.success && Array.isArray(result.data)
-          ? result.data
-          : [];
+        const listPotongan =
+          result && result.success && Array.isArray(result.data)
+            ? result.data
+            : [];
 
         listPotongan.forEach(function (p) {
-          const aktif = p.aktif === true || ["TRUE", "1", "AKTIF", "YA"].indexOf(String(p.aktif).toUpperCase()) !== -1;
+          const aktif =
+            p.aktif === true ||
+            ["TRUE", "1", "AKTIF", "YA"].indexOf(
+              String(p.aktif).toUpperCase(),
+            ) !== -1;
           if (!aktif) return;
 
           const tipe = String(p.tipe_nilai || "NOMINAL").toUpperCase();
@@ -2768,11 +2792,14 @@ ${siswaHtml}
 
         select.onchange = function () {
           const selected = select.options[select.selectedIndex];
-          if (info) info.innerText = selected && select.value === "NONE"
-            ? "Tidak ada potongan yang diterapkan."
-            : selected && select.value
-            ? "Potongan diterapkan ke semua siswa yang dipilih: " + selected.textContent
-            : "Potongan default setiap siswa akan digunakan.";
+          if (info)
+            info.innerText =
+              selected && select.value === "NONE"
+                ? "Tidak ada potongan yang diterapkan."
+                : selected && select.value
+                  ? "Potongan diterapkan ke semua siswa yang dipilih: " +
+                    selected.textContent
+                  : "Potongan default setiap siswa akan digunakan.";
         };
       })
       .withFailureHandler(function (err) {
@@ -2953,91 +2980,245 @@ ${siswaHtml}
 
     const modal = document.getElementById("modal-generate-progress");
     if (modal) {
-      setTimeout(function () {
-        modal.classList.add("hidden");
-        modal.classList.remove("flex");
-      }, success ? 450 : 0);
+      setTimeout(
+        function () {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+        },
+        success ? 450 : 0,
+      );
     }
   }
 
-  function generateTagihanMassalJS() {
-    const idPos = document.getElementById("setting-pos").value;
-    const periode = document.getElementById("setting-periode").value.trim();
-    const nominal =
-      Number(document.getElementById("setting-nominal").value) || 0;
-    const idPotongan = document.getElementById("setting-potongan").value;
-    const bisaDicicil = document.getElementById("setting-bisa-dicicil").checked;
-    const catatan = document.getElementById("setting-catatan").value.trim();
-
-    // Validasi
-    if (!idPos) {
-      alert("Silakan pilih Pos Pembayaran.");
-      return;
-    }
-    if (!periode) {
-      alert("Silakan isi Periode.");
-      return;
-    }
-
-    const checked = document.querySelectorAll(".setting-siswa-chk:checked");
-    if (checked.length === 0) {
-      alert("Pilih minimal satu siswa.");
-      return;
-    }
-
-    const idSiswaList = Array.from(checked).map(function (chk) {
-      return chk.value;
+  /**
+ * Generate tagihan massal
+ */
+function generateTagihanMassalJS() {
+  var kelas = document.getElementById('setting-kelas').value;
+  var idPos = document.getElementById('setting-pos').value;
+  var periode = document.getElementById('setting-periode').value;
+  var nominal = document.getElementById('setting-nominal').value;
+  var idPotongan = document.getElementById('setting-potongan').value;
+  var bisaDicicil = document.getElementById('setting-bisa-dicicil').checked;
+  var catatan = document.getElementById('setting-catatan').value;
+  
+  // Validasi
+  if (!kelas) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Peringatan',
+      text: 'Silakan pilih kelas terlebih dahulu.',
+      confirmButtonColor: '#f59e0b'
     });
-
-    const payload = {
-      id_pos: idPos,
-      periode: periode,
-      nominal: nominal,
-      id_potongan: idPotongan,
-      bisa_dicicil: bisaDicicil,
-      catatan: catatan,
-      id_siswa_list: idSiswaList,
-    };
-
-    const btn = document.getElementById("btn-generate-tagihan");
-    const original = btn.innerHTML;
-
-    btn.disabled = true;
-    btn.innerHTML = `
-    <i class="fa-solid fa-spinner animate-spin"></i>
-    Memproses...
-  `;
-
-    showGenerateProgress(idSiswaList.length);
-
-    google.script.run
-      .withSuccessHandler(function (res) {
-        btn.disabled = false;
-        btn.innerHTML = original;
-
-        if (res && res.success) {
-          hideGenerateProgress(true);
-          alert(res.message);
-          document.getElementById("btn-refresh-riwayat-setting").click();
-          // Optional: refresh list siswa (supaya yang sudah digenerate bisa di-skip visual)
-          // loadSiswaByKelasJS();
-        } else {
-          hideGenerateProgress(false);
-          alert(
-            "Gagal: " +
-              (res && res.message ? res.message : "Terjadi kesalahan."),
-          );
-        }
-      })
-      .withFailureHandler(function (err) {
-        btn.disabled = false;
-        btn.innerHTML = original;
-        hideGenerateProgress(false);
-        alert("Terjadi kesalahan sistem:\n" + err.message);
-      })
-      .generateTagihanMassal(payload);
+    return;
   }
+  
+  if (!idPos) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Peringatan',
+      text: 'Silakan pilih pos pembayaran.',
+      confirmButtonColor: '#f59e0b'
+    });
+    return;
+  }
+  
+  if (!periode) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Peringatan',
+      text: 'Silakan isi periode tagihan.',
+      confirmButtonColor: '#f59e0b'
+    });
+    return;
+  }
+  
+  // Ambil siswa yang dipilih
+  var checkboxes = document.querySelectorAll('.siswa-checkbox:checked');
+  if (checkboxes.length === 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Peringatan',
+      text: 'Silakan pilih minimal satu siswa.',
+      confirmButtonColor: '#f59e0b'
+    });
+    return;
+  }
+  
+  var idSiswaList = [];
+  checkboxes.forEach(function(cb) {
+    idSiswaList.push(cb.value);
+  });
+  
+  // Konfirmasi
+  var totalSiswa = idSiswaList.length;
+  var posName = document.getElementById('setting-pos').options[document.getElementById('setting-pos').selectedIndex]?.text || idPos;
+  
+  Swal.fire({
+    title: 'Konfirmasi Generate Tagihan',
+    html: `
+      <div style="text-align: left; padding: 10px 0;">
+        <p><strong>Jumlah Siswa:</strong> ${totalSiswa} siswa</p>
+        <p><strong>Pos Pembayaran:</strong> ${posName}</p>
+        <p><strong>Periode:</strong> ${periode}</p>
+        <p><strong>Nominal:</strong> ${nominal ? 'Rp ' + Number(nominal).toLocaleString('id-ID') : 'Default (dari master)'}</p>
+        <p><strong>Potongan:</strong> ${idPotongan ? 'Ya' : 'Default Siswa'}</p>
+        <p><strong>Bisa Dicicil:</strong> ${bisaDicicil ? 'Ya' : 'Tidak'}</p>
+        ${catatan ? '<p><strong>Catatan:</strong> ' + catatan + '</p>' : ''}
+      </div>
+    `,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: 'Ya, Generate!',
+    cancelButtonText: 'Batal'
+  }).then(function(result) {
+    if (result.isConfirmed) {
+      // Tampilkan progress
+      showLoading('Mengenerate tagihan...');
+      
+      var payload = {
+        id_pos: idPos,
+        periode: periode,
+        nominal: parseFloat(nominal) || 0,
+        id_potongan: idPotongan || '',
+        bisa_dicicil: bisaDicicil,
+        catatan: catatan || '',
+        id_siswa_list: idSiswaList
+      };
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          hideLoading();
+          if (result.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Berhasil!',
+              text: result.message,
+              confirmButtonColor: '#10b981'
+            }).then(function() {
+              // ============================================
+              // REFRESH DATA SETELAH GENERATE SELESAI
+              // ============================================
+              
+              // 1. Refresh data siswa di form setting
+              loadSiswaByKelasJS();
+              
+              // 2. Refresh riwayat tagihan "Berdasarkan Kelas"
+              // Cek tab mana yang aktif
+              var isKelasActive = !document.getElementById('riwayat-tab-kelas').classList.contains('hidden');
+              if (isKelasActive) {
+                // Jika tab kelas aktif, refresh langsung
+                searchRiwayatKelas(riwayatKelasPage);
+              } else {
+                // Jika tidak, set flag agar refresh saat tab diaktifkan
+                window._kelasLoaded = false;
+                // Refresh juga di background
+                setTimeout(function() {
+                  searchRiwayatKelas(1);
+                }, 500);
+              }
+              
+              // 3. Refresh riwayat "Berdasarkan Siswa" juga
+              var isSiswaActive = !document.getElementById('riwayat-tab-siswa').classList.contains('hidden');
+              if (isSiswaActive) {
+                searchRiwayatSiswa(riwayatSiswaPage);
+              } else {
+                window._siswaLoaded = false;
+              }
+              
+              // 4. Reset checkbox "Pilih Semua"
+              var checkAll = document.getElementById('setting-check-all');
+              if (checkAll) {
+                checkAll.checked = false;
+                checkAll.indeterminate = false;
+              }
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Gagal Generate',
+              text: result.message,
+              confirmButtonColor: '#dc2626'
+            });
+          }
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Terjadi kesalahan: ' + err.message,
+            confirmButtonColor: '#dc2626'
+          });
+        })
+        .generateTagihanMassal(payload);
+    }
+  });
+}
 
+/**
+ * Refresh semua data riwayat tagihan
+ * Fungsi ini akan me-refresh kedua tab (Kelas dan Siswa)
+ */
+function refreshAllRiwayatTagihan() {
+  // Refresh tab kelas
+  searchRiwayatKelas(riwayatKelasPage || 1);
+  
+  // Refresh tab siswa
+  searchRiwayatSiswa(riwayatSiswaPage || 1);
+  
+  // Tampilkan notifikasi
+  Swal.fire({
+    icon: 'success',
+    title: 'Data Diperbarui!',
+    text: 'Riwayat tagihan berhasil diperbarui.',
+    timer: 1500,
+    showConfirmButton: false
+  });
+}
+
+/**
+ * Refresh riwayat berdasarkan tab yang aktif
+ */
+function refreshRiwayatSettingAktif() {
+  var isKelasActive = !document.getElementById('riwayat-tab-kelas').classList.contains('hidden');
+  if (isKelasActive) {
+    searchRiwayatKelas(riwayatKelasPage);
+    // Tampilkan notifikasi ringan
+    Swal.fire({
+      icon: 'success',
+      title: 'Data Diperbarui!',
+      text: 'Riwayat berdasarkan kelas berhasil diperbarui.',
+      timer: 1200,
+      showConfirmButton: false
+    });
+  } else {
+    searchRiwayatSiswa(riwayatSiswaPage);
+    Swal.fire({
+      icon: 'success',
+      title: 'Data Diperbarui!',
+      text: 'Riwayat berdasarkan siswa berhasil diperbarui.',
+      timer: 1200,
+      showConfirmButton: false
+    });
+  }
+}
+
+/**
+ * Refresh riwayat berdasarkan kelas saja (dipanggil setelah generate)
+ */
+function refreshRiwayatKelas() {
+  searchRiwayatKelas(riwayatKelasPage || 1);
+}
+
+/**
+ * Refresh riwayat berdasarkan siswa saja
+ */
+function refreshRiwayatSiswa() {
+  searchRiwayatSiswa(riwayatSiswaPage || 1);
+}
   /* ========================================================
    RIWAYAT SETTING TAGIHAN + PAGINATION
 ======================================================== */
@@ -3137,7 +3318,6 @@ ${siswaHtml}
             ? "bg-amber-100 text-amber-700"
             : "bg-rose-100 text-rose-700";
 
-      
       const tgl = row.tanggal_tagihan || "-";
 
       html += `
@@ -3198,7 +3378,9 @@ ${siswaHtml}
     if (!idTagihan) return;
 
     showConfirmation(
-      "Yakin ingin menghapus tagihan " + idTagihan + "?\nTindakan ini tidak dapat dibatalkan.",
+      "Yakin ingin menghapus tagihan " +
+        idTagihan +
+        "?\nTindakan ini tidak dapat dibatalkan.",
     ).then(function (confirmed) {
       if (!confirmed) return;
 
@@ -3208,7 +3390,10 @@ ${siswaHtml}
             alert(res.message);
             refreshRiwayatSettingAktif();
           } else {
-            alert("Gagal: " + (res && res.message ? res.message : "Terjadi kesalahan."));
+            alert(
+              "Gagal: " +
+                (res && res.message ? res.message : "Terjadi kesalahan."),
+            );
           }
         })
         .withFailureHandler(function (err) {
@@ -3218,74 +3403,73 @@ ${siswaHtml}
     });
   }
 
-
-  ///viewmodular 
+  ///viewmodular
   /* ========================================================
    MASTER DATA (MODULAR)
 ======================================================== */
 
-let currentMasterSheet = "Master_Pos";
-let currentMasterHeaders = [];
-let currentMasterPrimaryKey = "id_pos";
-let currentMasterData = [];
-let currentMasterEditRowIndex = null;
-let listPosPembayaran = [];   // cache data Pos_Pembayaran
-const MASTER_LABELS = {
-  Master_Pos: "Master Pos",
-  Master_Potongan: "Master Potongan",
-  Pos_Pembayaran: "Pos Pembayaran",
-};
+  let currentMasterSheet = "Master_Pos";
+  let currentMasterHeaders = [];
+  let currentMasterPrimaryKey = "id_pos";
+  let currentMasterData = [];
+  let currentMasterEditRowIndex = null;
+  let listPosPembayaran = []; // cache data Pos_Pembayaran
+  const MASTER_LABELS = {
+    Master_Pos: "Master Pos",
+    Master_Potongan: "Master Potongan",
+    Pos_Pembayaran: "Pos Pembayaran",
+  };
 
-// Kolom yang dianggap boolean
-const BOOLEAN_COLUMNS = ["aktif", "bisa_dicicil"];
+  // Kolom yang dianggap boolean
+  const BOOLEAN_COLUMNS = ["aktif", "bisa_dicicil"];
 
-// Kolom yang sebaiknya number
-const NUMBER_COLUMNS = [
-  "tarif_default",
-  "nilai_potongan",
-  "nominal_asal",
-  "nominal_akhir",
-  "terbayar",
-  "sisa_tunggakan",
-  "nominal_potongan",
-];
+  // Kolom yang sebaiknya number
+  const NUMBER_COLUMNS = [
+    "tarif_default",
+    "nilai_potongan",
+    "nominal_asal",
+    "nominal_akhir",
+    "terbayar",
+    "sisa_tunggakan",
+    "nominal_potongan",
+  ];
 
-function switchMasterTab(sheetName) {
-  currentMasterSheet = sheetName;
-  currentMasterEditRowIndex = null;
+  function switchMasterTab(sheetName) {
+    currentMasterSheet = sheetName;
+    currentMasterEditRowIndex = null;
 
-  // Update tampilan tab
-  document.querySelectorAll(".master-tab").forEach(function (btn) {
-    btn.classList.remove(
-      "border-emerald-600",
-      "text-emerald-700",
-      "bg-emerald-50"
-    );
-    btn.classList.add("border-transparent", "text-slate-500");
-  });
+    // Update tampilan tab
+    document.querySelectorAll(".master-tab").forEach(function (btn) {
+      btn.classList.remove(
+        "border-emerald-600",
+        "text-emerald-700",
+        "bg-emerald-50",
+      );
+      btn.classList.add("border-transparent", "text-slate-500");
+    });
 
-  const activeBtn = document.getElementById("master-tab-" + sheetName);
-  if (activeBtn) {
-    activeBtn.classList.remove("border-transparent", "text-slate-500");
-    activeBtn.classList.add(
-      "border-emerald-600",
-      "text-emerald-700",
-      "bg-emerald-50"
-    );
+    const activeBtn = document.getElementById("master-tab-" + sheetName);
+    if (activeBtn) {
+      activeBtn.classList.remove("border-transparent", "text-slate-500");
+      activeBtn.classList.add(
+        "border-emerald-600",
+        "text-emerald-700",
+        "bg-emerald-50",
+      );
+    }
+
+    document.getElementById("master-sheet-label").innerText =
+      MASTER_LABELS[sheetName] || sheetName;
+
+    loadMasterDataJS();
   }
 
-  document.getElementById("master-sheet-label").innerText =
-    MASTER_LABELS[sheetName] || sheetName;
+  function loadMasterDataJS() {
+    const thead = document.getElementById("master-table-head");
+    const tbody = document.getElementById("master-table-body");
 
-  loadMasterDataJS();
-}
-
-function loadMasterDataJS() {
-  const thead = document.getElementById("master-table-head");
-  const tbody = document.getElementById("master-table-body");
-
-  thead.innerHTML = `<th class="p-4">Memuat...</th>`;
-  tbody.innerHTML = `
+    thead.innerHTML = `<th class="p-4">Memuat...</th>`;
+    tbody.innerHTML = `
     <tr>
       <td class="p-10 text-center text-slate-400">
         <i class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"></i>
@@ -3294,67 +3478,67 @@ function loadMasterDataJS() {
     </tr>
   `;
 
-  google.script.run
-    .withSuccessHandler(function (res) {
-      if (!res || !res.success) {
-        tbody.innerHTML = `
+    google.script.run
+      .withSuccessHandler(function (res) {
+        if (!res || !res.success) {
+          tbody.innerHTML = `
           <tr>
             <td class="p-8 text-center text-rose-500">
               Gagal memuat data.
             </td>
           </tr>
         `;
-        return;
-      }
+          return;
+        }
 
-      currentMasterHeaders = res.headers || [];
-      currentMasterPrimaryKey = res.primaryKey || "id";
-      currentMasterData = res.data || [];
+        currentMasterHeaders = res.headers || [];
+        currentMasterPrimaryKey = res.primaryKey || "id";
+        currentMasterData = res.data || [];
 
-      document.getElementById("master-total-data").innerText =
-        "• " + currentMasterData.length + " data";
+        document.getElementById("master-total-data").innerText =
+          "• " + currentMasterData.length + " data";
 
-      renderMasterTableJS();
-    })
-    .withFailureHandler(function (err) {
-      tbody.innerHTML = `
+        renderMasterTableJS();
+      })
+      .withFailureHandler(function (err) {
+        tbody.innerHTML = `
         <tr>
           <td class="p-8 text-center text-rose-500 font-semibold">
             Gagal: ${escapeHtml(err.message)}
           </td>
         </tr>
       `;
-    })
-    .getMasterData(currentMasterSheet);
-}
+      })
+      .getMasterData(currentMasterSheet);
+  }
 
-function renderMasterTableJS() {
-  const thead = document.getElementById("master-table-head");
-  const tbody = document.getElementById("master-table-body");
+  function renderMasterTableJS() {
+    const thead = document.getElementById("master-table-head");
+    const tbody = document.getElementById("master-table-body");
 
-  if (!currentMasterHeaders.length) {
-    thead.innerHTML = `<th class="p-4">Tidak ada kolom</th>`;
-    tbody.innerHTML = `
+    if (!currentMasterHeaders.length) {
+      thead.innerHTML = `<th class="p-4">Tidak ada kolom</th>`;
+      tbody.innerHTML = `
       <tr>
         <td class="p-8 text-center text-slate-400">Sheet kosong.</td>
       </tr>
     `;
-    return;
-  }
+      return;
+    }
 
-  // Header
-  let headHtml = currentMasterHeaders
-    .map(function (h) {
-      return `<th class="p-3 whitespace-nowrap text-xs uppercase tracking-wide">${escapeHtml(h)}</th>`;
-    })
-    .join("");
+    // Header
+    let headHtml = currentMasterHeaders
+      .map(function (h) {
+        return `<th class="p-3 whitespace-nowrap text-xs uppercase tracking-wide">${escapeHtml(h)}</th>`;
+      })
+      .join("");
 
-  headHtml += `<th class="p-3 text-center whitespace-nowrap text-xs uppercase">Aksi</th>`;
-  thead.innerHTML = `<tr>${headHtml}</tr>`;
+    headHtml += `<th class="p-3 text-center whitespace-nowrap text-xs uppercase">Aksi</th>`;
+    thead.innerHTML = `<tr>${headHtml}</tr>`;
 
-  // Body
-  if (!currentMasterData.length) {
-    tbody.innerHTML = `
+    // Body
+    if (!currentMasterData.length) {
+      tbody.innerHTML = `
       <tr>
         <td colspan="${currentMasterHeaders.length + 1}" class="p-10 text-center text-slate-400">
           <i class="fa-solid fa-inbox text-3xl mb-2"></i>
@@ -3362,64 +3546,64 @@ function renderMasterTableJS() {
         </td>
       </tr>
     `;
-    return;
-  }
+      return;
+    }
 
-  let bodyHtml = "";
+    let bodyHtml = "";
 
-  currentMasterData.forEach(function (row) {
-    bodyHtml += `<tr class="hover:bg-slate-50 transition">`;
+    currentMasterData.forEach(function (row) {
+      bodyHtml += `<tr class="hover:bg-slate-50 transition">`;
 
-    currentMasterHeaders.forEach(function (header) {
-      let value = row[header];
-      let display = "";
+      currentMasterHeaders.forEach(function (header) {
+        let value = row[header];
+        let display = "";
 
-      // Kolom TRUE / FALSE
-      if (header === "aktif" || header === "bisa_dicicil") {
-        const isTrue =
-          value === true ||
-          value === "TRUE" ||
-          value === "true" ||
-          value === 1 ||
-          value === "1";
+        // Kolom TRUE / FALSE
+        if (header === "aktif" || header === "bisa_dicicil") {
+          const isTrue =
+            value === true ||
+            value === "TRUE" ||
+            value === "true" ||
+            value === 1 ||
+            value === "1";
 
-        display = isTrue
-          ? `<span class="inline-flex px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">TRUE</span>`
-          : `<span class="inline-flex px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-600 text-xs font-bold">FALSE</span>`;
-      }
-      // Kolom tipe_nilai
-      else if (header === "tipe_nilai") {
-        display = `<span class="inline-flex px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">${escapeHtml(
-          String(value || "").toUpperCase()
-        )}</span>`;
-      }
-      // Kolom tipe_pos
-      else if (header === "tipe_pos") {
-        display = `<span class="inline-flex px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-700 text-xs font-bold">${escapeHtml(
-          String(value || "").toUpperCase()
-        )}</span>`;
-      }
-      // Kolom angka
-      else if (
-        NUMBER_COLUMNS.indexOf(header) !== -1 &&
-        value !== "" &&
-        value !== null &&
-        value !== undefined
-      ) {
-        display = formatRupiah(value);
-      }
-      // Default
-      else {
-        display = escapeHtml(
-          value === null || value === undefined ? "" : String(value)
-        );
-      }
+          display = isTrue
+            ? `<span class="inline-flex px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">TRUE</span>`
+            : `<span class="inline-flex px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-600 text-xs font-bold">FALSE</span>`;
+        }
+        // Kolom tipe_nilai
+        else if (header === "tipe_nilai") {
+          display = `<span class="inline-flex px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">${escapeHtml(
+            String(value || "").toUpperCase(),
+          )}</span>`;
+        }
+        // Kolom tipe_pos
+        else if (header === "tipe_pos") {
+          display = `<span class="inline-flex px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-700 text-xs font-bold">${escapeHtml(
+            String(value || "").toUpperCase(),
+          )}</span>`;
+        }
+        // Kolom angka
+        else if (
+          NUMBER_COLUMNS.indexOf(header) !== -1 &&
+          value !== "" &&
+          value !== null &&
+          value !== undefined
+        ) {
+          display = formatRupiah(value);
+        }
+        // Default
+        else {
+          display = escapeHtml(
+            value === null || value === undefined ? "" : String(value),
+          );
+        }
 
-      bodyHtml += `<td class="p-3 text-sm">${display}</td>`;
-    });
+        bodyHtml += `<td class="p-3 text-sm">${display}</td>`;
+      });
 
-    // Tombol Aksi
-    bodyHtml += `
+      // Tombol Aksi
+      bodyHtml += `
       <td class="p-3 text-center whitespace-nowrap">
         <button
           onclick='editMasterRowJS(${row._rowIndex})'
@@ -3438,117 +3622,122 @@ function renderMasterTableJS() {
       </td>
     `;
 
-    bodyHtml += `</tr>`;
-  });
+      bodyHtml += `</tr>`;
+    });
 
-  tbody.innerHTML = bodyHtml;
-}
+    tbody.innerHTML = bodyHtml;
+  }
 
-/* ========== FORM TAMBAH / EDIT ========== */
+  /* ========== FORM TAMBAH / EDIT ========== */
 
-/* ========================================================
+  /* ========================================================
    MASTER DATA - KONFIGURASI KOLOM
 ======================================================== */
 
-// Kolom yang pakai dropdown
-const SELECT_COLUMNS = {
-  tipe_nilai: ["NOMINAL", "PERSEN"],
-  tipe_pos: ["BULANAN", "SEKALI", "KEGIATAN", "TAHUNAN","SEMESTER", "LAINNYA"],
-  aktif: ["TRUE", "FALSE"],
-  bisa_dicicil: ["TRUE", "FALSE"],
-};
+  // Kolom yang pakai dropdown
+  const SELECT_COLUMNS = {
+    tipe_nilai: ["NOMINAL", "PERSEN"],
+    tipe_pos: [
+      "BULANAN",
+      "SEKALI",
+      "KEGIATAN",
+      "TAHUNAN",
+      "SEMESTER",
+      "LAINNYA",
+    ],
+    aktif: ["TRUE", "FALSE"],
+    bisa_dicicil: ["TRUE", "FALSE"],
+  };
 
-
-
-/* ========================================================
+  /* ========================================================
    FORM TAMBAH / EDIT (dengan Select dinamis)
 ======================================================== */
 
-function openMasterFormJS(rowIndex) {
-  currentMasterEditRowIndex = rowIndex || null;
+  function openMasterFormJS(rowIndex) {
+    currentMasterEditRowIndex = rowIndex || null;
 
-  const isEdit = !!rowIndex;
-  const title = isEdit ? "Edit Data" : "Tambah Data";
-  const subtitle = MASTER_LABELS[currentMasterSheet] || currentMasterSheet;
+    const isEdit = !!rowIndex;
+    const title = isEdit ? "Edit Data" : "Tambah Data";
+    const subtitle = MASTER_LABELS[currentMasterSheet] || currentMasterSheet;
 
-  document.getElementById("master-form-title").innerText = title;
-  document.getElementById("master-form-subtitle").innerText = subtitle;
+    document.getElementById("master-form-title").innerText = title;
+    document.getElementById("master-form-subtitle").innerText = subtitle;
 
-  // Jika sedang di Master_Pos dan mode Tambah → ambil data Pos_Pembayaran dulu
-  if (currentMasterSheet === "Master_Pos" && !isEdit) {
-    loadPosPembayaranForMasterJS(function () {
+    // Jika sedang di Master_Pos dan mode Tambah → ambil data Pos_Pembayaran dulu
+    if (currentMasterSheet === "Master_Pos" && !isEdit) {
+      loadPosPembayaranForMasterJS(function () {
+        buildMasterFormFields(isEdit, rowIndex);
+      });
+    } else {
       buildMasterFormFields(isEdit, rowIndex);
-    });
-  } else {
-    buildMasterFormFields(isEdit, rowIndex);
-  }
-}
-
-function buildMasterFormFields(isEdit, rowIndex) {
-  const form = document.getElementById("master-form");
-  form.innerHTML = "";
-
-  // Data yang sedang diedit
-  let editData = {};
-  if (isEdit) {
-    editData =
-      currentMasterData.find(function (r) {
-        return Number(r._rowIndex) === Number(rowIndex);
-      }) || {};
+    }
   }
 
-  currentMasterHeaders.forEach(function (header) {
-    if (header === "_rowIndex") return;
+  function buildMasterFormFields(isEdit, rowIndex) {
+    const form = document.getElementById("master-form");
+    form.innerHTML = "";
 
-    let value =
-      editData[header] !== undefined && editData[header] !== null
-        ? editData[header]
-        : "";
-
-    // Normalisasi boolean
-    if (header === "aktif" || header === "bisa_dicicil") {
-      const isTrue =
-        value === true ||
-        value === "TRUE" ||
-        value === "true" ||
-        value === 1 ||
-        value === "1";
-      value = isTrue ? "TRUE" : "FALSE";
+    // Data yang sedang diedit
+    let editData = {};
+    if (isEdit) {
+      editData =
+        currentMasterData.find(function (r) {
+          return Number(r._rowIndex) === Number(rowIndex);
+        }) || {};
     }
 
-    // Normalisasi tipe_nilai
-    if (header === "tipe_nilai") {
-      value = String(value).toUpperCase();
-      if (value !== "PERSEN") value = "NOMINAL";
-    }
+    currentMasterHeaders.forEach(function (header) {
+      if (header === "_rowIndex") return;
 
-    const isNumber = NUMBER_COLUMNS.indexOf(header) !== -1;
-    const isPrimary = header === currentMasterPrimaryKey;
-    const isReadonly = isEdit && isPrimary;
-    const hasSelect = SELECT_COLUMNS.hasOwnProperty(header);
+      let value =
+        editData[header] !== undefined && editData[header] !== null
+          ? editData[header]
+          : "";
 
-    let fieldHtml = "";
+      // Normalisasi boolean
+      if (header === "aktif" || header === "bisa_dicicil") {
+        const isTrue =
+          value === true ||
+          value === "TRUE" ||
+          value === "true" ||
+          value === 1 ||
+          value === "1";
+        value = isTrue ? "TRUE" : "FALSE";
+      }
 
-    // =====================================================
-    // KHUSUS Master_Pos + mode TAMBAH
-    // id_pos, kode_pos, nama_pos diambil dari Pos_Pembayaran
-    // =====================================================
-    if (
-      currentMasterSheet === "Master_Pos" &&
-      !isEdit &&
-      (header === "id_pos" || header === "kode_pos" || header === "nama_pos")
-    ) {
-      if (header === "id_pos") {
-        // Buat select dari Pos_Pembayaran
-        let optionsHtml = `<option value="">-- Pilih ID Pos --</option>`;
+      // Normalisasi tipe_nilai
+      if (header === "tipe_nilai") {
+        value = String(value).toUpperCase();
+        if (value !== "PERSEN") value = "NOMINAL";
+      }
 
-        listPosPembayaran.forEach(function (pos) {
-          const id = String(pos.id_pos || "").trim();
-          const selected = String(value).trim() === id ? "selected" : "";
-          optionsHtml += `<option value="${escapeHtml(id)}" ${selected}>${escapeHtml(id)}</option>`;
-        });
+      const isNumber = NUMBER_COLUMNS.indexOf(header) !== -1;
+      const isPrimary = header === currentMasterPrimaryKey;
+      const isReadonly = isEdit && isPrimary;
+      const hasSelect = SELECT_COLUMNS.hasOwnProperty(header);
 
-        fieldHtml = `
+      let fieldHtml = "";
+
+      // =====================================================
+      // KHUSUS Master_Pos + mode TAMBAH
+      // id_pos, kode_pos, nama_pos diambil dari Pos_Pembayaran
+      // =====================================================
+      if (
+        currentMasterSheet === "Master_Pos" &&
+        !isEdit &&
+        (header === "id_pos" || header === "kode_pos" || header === "nama_pos")
+      ) {
+        if (header === "id_pos") {
+          // Buat select dari Pos_Pembayaran
+          let optionsHtml = `<option value="">-- Pilih ID Pos --</option>`;
+
+          listPosPembayaran.forEach(function (pos) {
+            const id = String(pos.id_pos || "").trim();
+            const selected = String(value).trim() === id ? "selected" : "";
+            optionsHtml += `<option value="${escapeHtml(id)}" ${selected}>${escapeHtml(id)}</option>`;
+          });
+
+          fieldHtml = `
           <div>
             <label class="text-xs font-semibold text-slate-600">
               id_pos <span class="text-rose-500">*</span>
@@ -3562,9 +3751,9 @@ function buildMasterFormFields(isEdit, rowIndex) {
             </select>
           </div>
         `;
-      } else if (header === "kode_pos" || header === "nama_pos") {
-        // Readonly, akan diisi otomatis
-        fieldHtml = `
+        } else if (header === "kode_pos" || header === "nama_pos") {
+          // Readonly, akan diisi otomatis
+          fieldHtml = `
           <div>
             <label class="text-xs font-semibold text-slate-600">
               ${escapeHtml(header)}
@@ -3578,24 +3767,24 @@ function buildMasterFormFields(isEdit, rowIndex) {
             />
           </div>
         `;
+        }
       }
-    }
-    // =====================================================
-    // DROPDOWN BIASA (aktif, bisa_dicicil, tipe_nilai, dll)
-    // =====================================================
-    else if (hasSelect) {
-      const options = SELECT_COLUMNS[header];
-      let optionsHtml = options
-        .map(function (opt) {
-          const selected =
-            String(value).toUpperCase() === String(opt).toUpperCase()
-              ? "selected"
-              : "";
-          return `<option value="${escapeHtml(opt)}" ${selected}>${escapeHtml(opt)}</option>`;
-        })
-        .join("");
+      // =====================================================
+      // DROPDOWN BIASA (aktif, bisa_dicicil, tipe_nilai, dll)
+      // =====================================================
+      else if (hasSelect) {
+        const options = SELECT_COLUMNS[header];
+        let optionsHtml = options
+          .map(function (opt) {
+            const selected =
+              String(value).toUpperCase() === String(opt).toUpperCase()
+                ? "selected"
+                : "";
+            return `<option value="${escapeHtml(opt)}" ${selected}>${escapeHtml(opt)}</option>`;
+          })
+          .join("");
 
-      fieldHtml = `
+        fieldHtml = `
         <div>
           <label class="text-xs font-semibold text-slate-600">
             ${escapeHtml(header)}
@@ -3609,12 +3798,12 @@ function buildMasterFormFields(isEdit, rowIndex) {
           </select>
         </div>
       `;
-    }
-    // =====================================================
-    // INPUT BIASA
-    // =====================================================
-    else {
-      fieldHtml = `
+      }
+      // =====================================================
+      // INPUT BIASA
+      // =====================================================
+      else {
+        fieldHtml = `
         <div>
           <label class="text-xs font-semibold text-slate-600">
             ${escapeHtml(header)}
@@ -3631,112 +3820,116 @@ function buildMasterFormFields(isEdit, rowIndex) {
           />
         </div>
       `;
+      }
+
+      form.innerHTML += fieldHtml;
+    });
+
+    document.getElementById("modal-master-form").classList.remove("hidden");
+  }
+
+  /**
+   * Saat user memilih id_pos di form Master_Pos (mode tambah)
+   */
+  function onMasterPosSelectedJS() {
+    const select = document.getElementById("master-field-id_pos");
+    if (!select) return;
+
+    const selectedId = (select.value || "").trim();
+
+    const pos = listPosPembayaran.find(function (p) {
+      return String(p.id_pos || "").trim() === selectedId;
+    });
+
+    const kodeInput = document.getElementById("master-field-kode_pos");
+    const namaInput = document.getElementById("master-field-nama_pos");
+
+    if (pos) {
+      if (kodeInput) kodeInput.value = pos.kode_pos || "";
+      if (namaInput) namaInput.value = pos.nama_pos || "";
+    } else {
+      if (kodeInput) kodeInput.value = "";
+      if (namaInput) namaInput.value = "";
+    }
+  }
+
+  function closeMasterFormJS() {
+    document.getElementById("modal-master-form").classList.add("hidden");
+    currentMasterEditRowIndex = null;
+  }
+
+  function saveMasterFormJS() {
+    const payload = {};
+
+    if (currentMasterEditRowIndex) {
+      payload._rowIndex = currentMasterEditRowIndex;
     }
 
-    form.innerHTML += fieldHtml;
-  });
+    let valid = true;
 
-  document.getElementById("modal-master-form").classList.remove("hidden");
-}
+    currentMasterHeaders.forEach(function (header) {
+      if (header === "_rowIndex") return;
 
-/**
- * Saat user memilih id_pos di form Master_Pos (mode tambah)
- */
-function onMasterPosSelectedJS() {
-  const select = document.getElementById("master-field-id_pos");
-  if (!select) return;
+      const el = document.getElementById("master-field-" + header);
+      if (!el) return;
 
-  const selectedId = (select.value || "").trim();
+      let val = el.value;
 
-  const pos = listPosPembayaran.find(function (p) {
-    return String(p.id_pos || "").trim() === selectedId;
-  });
-
-  const kodeInput = document.getElementById("master-field-kode_pos");
-  const namaInput = document.getElementById("master-field-nama_pos");
-
-  if (pos) {
-    if (kodeInput) kodeInput.value = pos.kode_pos || "";
-    if (namaInput) namaInput.value = pos.nama_pos || "";
-  } else {
-    if (kodeInput) kodeInput.value = "";
-    if (namaInput) namaInput.value = "";
-  }
-}
-
-function closeMasterFormJS() {
-  document.getElementById("modal-master-form").classList.add("hidden");
-  currentMasterEditRowIndex = null;
-}
-
-function saveMasterFormJS() {
-  const payload = {};
-
-  if (currentMasterEditRowIndex) {
-    payload._rowIndex = currentMasterEditRowIndex;
-  }
-
-  let valid = true;
-
-  currentMasterHeaders.forEach(function (header) {
-  if (header === "_rowIndex") return;
-
-  const el = document.getElementById("master-field-" + header);
-  if (!el) return;
-
-  let val = el.value;
-
-  // Konversi TRUE/FALSE string menjadi boolean asli untuk sheet
-  if (header === "aktif" || header === "bisa_dicicil") {
-    payload[header] = String(val).toUpperCase() === "TRUE";
-  } else {
-    payload[header] = typeof val === "string" ? val.trim() : val;
-  }
-
-  // Validasi primary key
-  if (header === currentMasterPrimaryKey && !payload[header]) {
-    valid = false;
-  }
-});
-
-  if (!valid) {
-    alert("Primary key (" + currentMasterPrimaryKey + ") wajib diisi.");
-    return;
-  }
-
-  const btn = document.getElementById("btn-save-master");
-  const original = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
-
-  google.script.run
-    .withSuccessHandler(function (res) {
-      btn.disabled = false;
-      btn.innerHTML = original;
-
-      if (res && res.success) {
-        closeMasterFormJS();
-        loadMasterDataJS();
-        alert(res.message);
+      // Konversi TRUE/FALSE string menjadi boolean asli untuk sheet
+      if (header === "aktif" || header === "bisa_dicicil") {
+        payload[header] = String(val).toUpperCase() === "TRUE";
       } else {
-        alert("Gagal: " + (res && res.message ? res.message : "Terjadi kesalahan."));
+        payload[header] = typeof val === "string" ? val.trim() : val;
       }
-    })
-    .withFailureHandler(function (err) {
-      btn.disabled = false;
-      btn.innerHTML = original;
-      alert("Terjadi kesalahan:\n" + err.message);
-    })
-    .saveMasterData(currentMasterSheet, payload);
-}
 
-function editMasterRowJS(rowIndex) {
-  openMasterFormJS(rowIndex);
-}
+      // Validasi primary key
+      if (header === currentMasterPrimaryKey && !payload[header]) {
+        valid = false;
+      }
+    });
 
-function deleteMasterRowJS(rowIndex) {
-  showConfirmation("Yakin ingin menghapus data ini?\nTindakan ini tidak dapat dibatalkan.")
-    .then(function (confirmed) {
+    if (!valid) {
+      alert("Primary key (" + currentMasterPrimaryKey + ") wajib diisi.");
+      return;
+    }
+
+    const btn = document.getElementById("btn-save-master");
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
+
+    google.script.run
+      .withSuccessHandler(function (res) {
+        btn.disabled = false;
+        btn.innerHTML = original;
+
+        if (res && res.success) {
+          closeMasterFormJS();
+          loadMasterDataJS();
+          alert(res.message);
+        } else {
+          alert(
+            "Gagal: " +
+              (res && res.message ? res.message : "Terjadi kesalahan."),
+          );
+        }
+      })
+      .withFailureHandler(function (err) {
+        btn.disabled = false;
+        btn.innerHTML = original;
+        alert("Terjadi kesalahan:\n" + err.message);
+      })
+      .saveMasterData(currentMasterSheet, payload);
+  }
+
+  function editMasterRowJS(rowIndex) {
+    openMasterFormJS(rowIndex);
+  }
+
+  function deleteMasterRowJS(rowIndex) {
+    showConfirmation(
+      "Yakin ingin menghapus data ini?\nTindakan ini tidak dapat dibatalkan.",
+    ).then(function (confirmed) {
       if (!confirmed) return;
 
       google.script.run
@@ -3745,7 +3938,10 @@ function deleteMasterRowJS(rowIndex) {
             loadMasterDataJS();
             alert(res.message);
           } else {
-            alert("Gagal: " + (res && res.message ? res.message : "Terjadi kesalahan."));
+            alert(
+              "Gagal: " +
+                (res && res.message ? res.message : "Terjadi kesalahan."),
+            );
           }
         })
         .withFailureHandler(function (err) {
@@ -3753,36 +3949,36 @@ function deleteMasterRowJS(rowIndex) {
         })
         .deleteMasterData(currentMasterSheet, rowIndex);
     });
-}
+  }
 
-function loadPosPembayaranForMasterJS(callback) {
-  google.script.run
-    .withSuccessHandler(function (res) {
-      if (res && res.success && Array.isArray(res.data)) {
-        listPosPembayaran = res.data;
-      } else {
+  function loadPosPembayaranForMasterJS(callback) {
+    google.script.run
+      .withSuccessHandler(function (res) {
+        if (res && res.success && Array.isArray(res.data)) {
+          listPosPembayaran = res.data;
+        } else {
+          listPosPembayaran = [];
+        }
+        if (typeof callback === "function") callback();
+      })
+      .withFailureHandler(function () {
         listPosPembayaran = [];
-      }
-      if (typeof callback === "function") callback();
-    })
-    .withFailureHandler(function () {
-      listPosPembayaran = [];
-      if (typeof callback === "function") callback();
-    })
-    .getMasterData("Pos_Pembayaran");
-}
+        if (typeof callback === "function") callback();
+      })
+      .getMasterData("Pos_Pembayaran");
+  }
 
-/* ========================================================
+  /* ========================================================
    DATA SISWA
 ======================================================== */
 
-let listSiswaAll = [];
-let currentSiswaEditRowIndex = null;
-let listPotonganForSiswa = [];
+  let listSiswaAll = [];
+  let currentSiswaEditRowIndex = null;
+  let listPotonganForSiswa = [];
 
-function loadSiswaJS() {
-  const tbody = document.getElementById("table-siswa-body");
-  tbody.innerHTML = `
+  function loadSiswaJS() {
+    const tbody = document.getElementById("table-siswa-body");
+    tbody.innerHTML = `
     <tr>
       <td colspan="10" class="p-10 text-center text-slate-400">
         <i class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"></i>
@@ -3791,78 +3987,78 @@ function loadSiswaJS() {
     </tr>
   `;
 
-  google.script.run
-    .withSuccessHandler(function (res) {
-      if (!res || !res.success) {
-        tbody.innerHTML = `
+    google.script.run
+      .withSuccessHandler(function (res) {
+        if (!res || !res.success) {
+          tbody.innerHTML = `
           <tr>
             <td colspan="10" class="p-8 text-center text-rose-500">
               Gagal memuat data siswa.
             </td>
           </tr>
         `;
-        return;
-      }
+          return;
+        }
 
-      listSiswaAll = res.data || [];
-      renderSiswaTableJS();
-    })
-    .withFailureHandler(function (err) {
-      tbody.innerHTML = `
+        listSiswaAll = res.data || [];
+        renderSiswaTableJS();
+      })
+      .withFailureHandler(function (err) {
+        tbody.innerHTML = `
         <tr>
           <td colspan="10" class="p-8 text-center text-rose-500 font-semibold">
             Gagal: ${escapeHtml(err.message)}
           </td>
         </tr>
       `;
-    })
-    .getSiswaList();
-}
-
-function handleSiswaKeyup(e) {
-  if (e.key === "Enter") {
-    renderSiswaTableJS();
-  }
-}
-
-function renderSiswaTableJS() {
-  const tbody = document.getElementById("table-siswa-body");
-  const keyword = (document.getElementById("siswa-keyword").value || "")
-    .trim()
-    .toLowerCase();
-
-  let filtered = listSiswaAll;
-
-  if (keyword) {
-    filtered = listSiswaAll.filter(function (s) {
-      const text = [
-        s.id_siswa,
-        s.nisn,
-        s.nis,
-        s.nama_lengkap,
-        s.kelas,
-        s.tahun_pelajaran,
-        s.status_siswa,
-        s.nama_potongan,
-      ]
-        .join(" ")
-        .toLowerCase();
-      return text.indexOf(keyword) !== -1;
-    });
+      })
+      .getSiswaList();
   }
 
-  // Summary
-  const total = listSiswaAll.length;
-  const aktif = listSiswaAll.filter(function (s) {
-    return String(s.status_siswa).toUpperCase() === "AKTIF";
-  }).length;
+  function handleSiswaKeyup(e) {
+    if (e.key === "Enter") {
+      renderSiswaTableJS();
+    }
+  }
 
-  document.getElementById("siswa-total").innerText = total;
-  document.getElementById("siswa-aktif").innerText = aktif;
-  document.getElementById("siswa-ditampilkan").innerText = filtered.length;
+  function renderSiswaTableJS() {
+    const tbody = document.getElementById("table-siswa-body");
+    const keyword = (document.getElementById("siswa-keyword").value || "")
+      .trim()
+      .toLowerCase();
 
-  if (!filtered.length) {
-    tbody.innerHTML = `
+    let filtered = listSiswaAll;
+
+    if (keyword) {
+      filtered = listSiswaAll.filter(function (s) {
+        const text = [
+          s.id_siswa,
+          s.nisn,
+          s.nis,
+          s.nama_lengkap,
+          s.kelas,
+          s.tahun_pelajaran,
+          s.status_siswa,
+          s.nama_potongan,
+        ]
+          .join(" ")
+          .toLowerCase();
+        return text.indexOf(keyword) !== -1;
+      });
+    }
+
+    // Summary
+    const total = listSiswaAll.length;
+    const aktif = listSiswaAll.filter(function (s) {
+      return String(s.status_siswa).toUpperCase() === "AKTIF";
+    }).length;
+
+    document.getElementById("siswa-total").innerText = total;
+    document.getElementById("siswa-aktif").innerText = aktif;
+    document.getElementById("siswa-ditampilkan").innerText = filtered.length;
+
+    if (!filtered.length) {
+      tbody.innerHTML = `
       <tr>
         <td colspan="10" class="p-10 text-center text-slate-400">
           <i class="fa-solid fa-user-slash text-3xl mb-2"></i>
@@ -3870,18 +4066,18 @@ function renderSiswaTableJS() {
         </td>
       </tr>
     `;
-    return;
-  }
+      return;
+    }
 
-  let html = "";
+    let html = "";
 
-  filtered.forEach(function (s) {
-    const statusClass =
-      String(s.status_siswa).toUpperCase() === "AKTIF"
-        ? "bg-emerald-100 text-emerald-700"
-        : "bg-slate-200 text-slate-600";
+    filtered.forEach(function (s) {
+      const statusClass =
+        String(s.status_siswa).toUpperCase() === "AKTIF"
+          ? "bg-emerald-100 text-emerald-700"
+          : "bg-slate-200 text-slate-600";
 
-    html += `
+      html += `
       <tr class="hover:bg-slate-50 transition">
         <td class="p-3 font-semibold text-emerald-700 text-sm">${escapeHtml(s.id_siswa)}</td>
         <td class="p-3 text-sm">${escapeHtml(s.nisn || "-")}</td>
@@ -3920,92 +4116,92 @@ function renderSiswaTableJS() {
         </td>
       </tr>
     `;
-  });
+    });
 
-  tbody.innerHTML = html;
-}
-
-/* ========== FORM SISWA ========== */
-
-function openSiswaFormJS(rowIndex) {
-  currentSiswaEditRowIndex = rowIndex || null;
-  const isEdit = !!rowIndex;
-
-  document.getElementById("siswa-form-title").innerText = isEdit
-    ? "Edit Siswa"
-    : "Tambah Siswa";
-
-  // Ambil daftar potongan dulu
-  google.script.run
-    .withSuccessHandler(function (res) {
-      listPotonganForSiswa = res && res.data ? res.data : [];
-      buildSiswaFormFields(isEdit, rowIndex);
-    })
-    .withFailureHandler(function () {
-      listPotonganForSiswa = [];
-      buildSiswaFormFields(isEdit, rowIndex);
-    })
-    .getMasterData("Master_Potongan");
-}
-
-function buildSiswaFormFields(isEdit, rowIndex) {
-  const form = document.getElementById("siswa-form");
-  form.innerHTML = "";
-
-  let editData = {};
-  if (isEdit) {
-    editData =
-      listSiswaAll.find(function (s) {
-        return Number(s._rowIndex) === Number(rowIndex);
-      }) || {};
+    tbody.innerHTML = html;
   }
 
-  const fields = [
-    { key: "id_siswa", label: "ID Siswa", required: true, readonly: isEdit },
-    { key: "nisn", label: "NISN" },
-    { key: "nis", label: "NIS" },
-    { key: "nama_lengkap", label: "Nama Lengkap", required: true },
-    {
-      key: "jenis_kelamin",
-      label: "Jenis Kelamin",
-      type: "select",
-      options: ["L", "P"],
-    },
-    { key: "kelas", label: "Kelas" },
-    { key: "tahun_pelajaran", label: "Tahun Pelajaran" },
-    {
-      key: "status_siswa",
-      label: "Status",
-      type: "select",
-      options: ["AKTIF", "NONAKTIF", "LULUS", "PINDAH"],
-    },
-    {
-      key: "id_potongan_default",
-      label: "Potongan Default",
-      type: "select-potongan",
-    },
-  ];
+  /* ========== FORM SISWA ========== */
 
-  fields.forEach(function (f) {
-    const value =
-      editData[f.key] !== undefined && editData[f.key] !== null
-        ? editData[f.key]
-        : "";
+  function openSiswaFormJS(rowIndex) {
+    currentSiswaEditRowIndex = rowIndex || null;
+    const isEdit = !!rowIndex;
 
-    let fieldHtml = "";
+    document.getElementById("siswa-form-title").innerText = isEdit
+      ? "Edit Siswa"
+      : "Tambah Siswa";
 
-    if (f.type === "select") {
-      let optionsHtml = f.options
-        .map(function (opt) {
-          const selected =
-            String(value).toUpperCase() === String(opt).toUpperCase()
-              ? "selected"
-              : "";
-          return `<option value="${escapeHtml(opt)}" ${selected}>${escapeHtml(opt)}</option>`;
-        })
-        .join("");
+    // Ambil daftar potongan dulu
+    google.script.run
+      .withSuccessHandler(function (res) {
+        listPotonganForSiswa = res && res.data ? res.data : [];
+        buildSiswaFormFields(isEdit, rowIndex);
+      })
+      .withFailureHandler(function () {
+        listPotonganForSiswa = [];
+        buildSiswaFormFields(isEdit, rowIndex);
+      })
+      .getMasterData("Master_Potongan");
+  }
 
-      fieldHtml = `
+  function buildSiswaFormFields(isEdit, rowIndex) {
+    const form = document.getElementById("siswa-form");
+    form.innerHTML = "";
+
+    let editData = {};
+    if (isEdit) {
+      editData =
+        listSiswaAll.find(function (s) {
+          return Number(s._rowIndex) === Number(rowIndex);
+        }) || {};
+    }
+
+    const fields = [
+      { key: "id_siswa", label: "ID Siswa", required: true, readonly: isEdit },
+      { key: "nisn", label: "NISN" },
+      { key: "nis", label: "NIS" },
+      { key: "nama_lengkap", label: "Nama Lengkap", required: true },
+      {
+        key: "jenis_kelamin",
+        label: "Jenis Kelamin",
+        type: "select",
+        options: ["L", "P"],
+      },
+      { key: "kelas", label: "Kelas" },
+      { key: "tahun_pelajaran", label: "Tahun Pelajaran" },
+      {
+        key: "status_siswa",
+        label: "Status",
+        type: "select",
+        options: ["AKTIF", "NONAKTIF", "LULUS", "PINDAH"],
+      },
+      {
+        key: "id_potongan_default",
+        label: "Potongan Default",
+        type: "select-potongan",
+      },
+    ];
+
+    fields.forEach(function (f) {
+      const value =
+        editData[f.key] !== undefined && editData[f.key] !== null
+          ? editData[f.key]
+          : "";
+
+      let fieldHtml = "";
+
+      if (f.type === "select") {
+        let optionsHtml = f.options
+          .map(function (opt) {
+            const selected =
+              String(value).toUpperCase() === String(opt).toUpperCase()
+                ? "selected"
+                : "";
+            return `<option value="${escapeHtml(opt)}" ${selected}>${escapeHtml(opt)}</option>`;
+          })
+          .join("");
+
+        fieldHtml = `
         <div>
           <label class="text-xs font-semibold text-slate-600">
             ${escapeHtml(f.label)}
@@ -4019,16 +4215,16 @@ function buildSiswaFormFields(isEdit, rowIndex) {
           </select>
         </div>
       `;
-    } else if (f.type === "select-potongan") {
-      let optionsHtml = `<option value="">-- Tidak Ada --</option>`;
-      listPotonganForSiswa.forEach(function (p) {
-        const id = String(p.id_potongan || "").trim();
-        const nama = String(p.nama_potongan || id).trim();
-        const selected = String(value) === id ? "selected" : "";
-        optionsHtml += `<option value="${escapeHtml(id)}" ${selected}>${escapeHtml(nama)} (${escapeHtml(id)})</option>`;
-      });
+      } else if (f.type === "select-potongan") {
+        let optionsHtml = `<option value="">-- Tidak Ada --</option>`;
+        listPotonganForSiswa.forEach(function (p) {
+          const id = String(p.id_potongan || "").trim();
+          const nama = String(p.nama_potongan || id).trim();
+          const selected = String(value) === id ? "selected" : "";
+          optionsHtml += `<option value="${escapeHtml(id)}" ${selected}>${escapeHtml(nama)} (${escapeHtml(id)})</option>`;
+        });
 
-      fieldHtml = `
+        fieldHtml = `
         <div>
           <label class="text-xs font-semibold text-slate-600">${escapeHtml(f.label)}</label>
           <select
@@ -4039,8 +4235,8 @@ function buildSiswaFormFields(isEdit, rowIndex) {
           </select>
         </div>
       `;
-    } else {
-      fieldHtml = `
+      } else {
+        fieldHtml = `
         <div>
           <label class="text-xs font-semibold text-slate-600">
             ${escapeHtml(f.label)}
@@ -4057,879 +4253,2637 @@ function buildSiswaFormFields(isEdit, rowIndex) {
           />
         </div>
       `;
+      }
+
+      form.innerHTML += fieldHtml;
+    });
+
+    document.getElementById("modal-siswa-form").classList.remove("hidden");
+  }
+
+  function closeSiswaFormJS() {
+    document.getElementById("modal-siswa-form").classList.add("hidden");
+    currentSiswaEditRowIndex = null;
+  }
+
+  function saveSiswaJS() {
+    const payload = {};
+
+    if (currentSiswaEditRowIndex) {
+      payload._rowIndex = currentSiswaEditRowIndex;
     }
 
-    form.innerHTML += fieldHtml;
-  });
+    const keys = [
+      "id_siswa",
+      "nisn",
+      "nis",
+      "nama_lengkap",
+      "jenis_kelamin",
+      "kelas",
+      "tahun_pelajaran",
+      "status_siswa",
+      "id_potongan_default",
+    ];
 
-  document.getElementById("modal-siswa-form").classList.remove("hidden");
-}
+    keys.forEach(function (key) {
+      const el = document.getElementById("siswa-field-" + key);
+      payload[key] = el ? el.value.trim() : "";
+    });
 
-function closeSiswaFormJS() {
-  document.getElementById("modal-siswa-form").classList.add("hidden");
-  currentSiswaEditRowIndex = null;
-}
+    if (!payload.id_siswa) {
+      alert("ID Siswa wajib diisi.");
+      return;
+    }
+    if (!payload.nama_lengkap) {
+      alert("Nama Lengkap wajib diisi.");
+      return;
+    }
 
-function saveSiswaJS() {
-  const payload = {};
-
-  if (currentSiswaEditRowIndex) {
-    payload._rowIndex = currentSiswaEditRowIndex;
-  }
-
-  const keys = [
-    "id_siswa",
-    "nisn",
-    "nis",
-    "nama_lengkap",
-    "jenis_kelamin",
-    "kelas",
-    "tahun_pelajaran",
-    "status_siswa",
-    "id_potongan_default",
-  ];
-
-  keys.forEach(function (key) {
-    const el = document.getElementById("siswa-field-" + key);
-    payload[key] = el ? el.value.trim() : "";
-  });
-
-  if (!payload.id_siswa) {
-    alert("ID Siswa wajib diisi.");
-    return;
-  }
-  if (!payload.nama_lengkap) {
-    alert("Nama Lengkap wajib diisi.");
-    return;
-  }
-
-  const btn = document.getElementById("btn-save-siswa");
-  const original = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
-
-  google.script.run
-    .withSuccessHandler(function (res) {
-      btn.disabled = false;
-      btn.innerHTML = original;
-
-      if (res && res.success) {
-        closeSiswaFormJS();
-        loadSiswaJS();
-        alert(res.message);
-      } else {
-        alert("Gagal: " + (res && res.message ? res.message : "Terjadi kesalahan."));
-      }
-    })
-    .withFailureHandler(function (err) {
-      btn.disabled = false;
-      btn.innerHTML = original;
-      alert("Terjadi kesalahan:\n" + err.message);
-    })
-    .saveSiswa(payload);
-}
-
-function editSiswaJS(rowIndex) {
-  openSiswaFormJS(rowIndex);
-}
-
-function deleteSiswaJS(rowIndex) {
-  showConfirmation("Yakin ingin menghapus data siswa ini?").then(function (confirmed) {
-    if (!confirmed) return;
+    const btn = document.getElementById("btn-save-siswa");
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
 
     google.script.run
       .withSuccessHandler(function (res) {
+        btn.disabled = false;
+        btn.innerHTML = original;
+
         if (res && res.success) {
+          closeSiswaFormJS();
           loadSiswaJS();
           alert(res.message);
         } else {
-          alert("Gagal: " + (res && res.message ? res.message : "Terjadi kesalahan."));
+          alert(
+            "Gagal: " +
+              (res && res.message ? res.message : "Terjadi kesalahan."),
+          );
         }
       })
       .withFailureHandler(function (err) {
+        btn.disabled = false;
+        btn.innerHTML = original;
         alert("Terjadi kesalahan:\n" + err.message);
       })
-      .deleteSiswa(rowIndex);
-  });
-}
-
-/* ========== EXPORT EXCEL (langsung .xlsx) ========== */
-
-function exportSiswaJS() {
-  const btn = event.currentTarget;
-  const original = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-1"></i> Menyiapkan file...`;
-
-  google.script.run
-    .withSuccessHandler(function (res) {
-      btn.disabled = false;
-      btn.innerHTML = original;
-
-      if (res && res.success && res.downloadUrl) {
-        // Langsung trigger download
-        const a = document.createElement("a");
-        a.href = res.downloadUrl;
-        a.download = res.fileName || "Data_Siswa.xlsx";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
-        alert(res.message);
-      } else {
-        alert("Gagal export: " + (res && res.message ? res.message : "Terjadi kesalahan."));
-      }
-    })
-    .withFailureHandler(function (err) {
-      btn.disabled = false;
-      btn.innerHTML = original;
-      alert("Terjadi kesalahan:\n" + err.message);
-    })
-    .exportSiswaToExcel();
-}
-
-/* ========== IMPORT DARI FILE EXCEL ========== */
-
-function openImportSiswaJS() {
-  document.getElementById("import-siswa-file").value = "";
-  document.getElementById("modal-import-siswa").classList.remove("hidden");
-}
-
-function closeImportSiswaJS() {
-  document.getElementById("modal-import-siswa").classList.add("hidden");
-}
-
-function prosesImportSiswaFileJS() {
-  const fileInput = document.getElementById("import-siswa-file");
-  const file = fileInput.files[0];
-
-  if (!file) {
-    alert("Silakan pilih file Excel terlebih dahulu.");
-    return;
+      .saveSiswa(payload);
   }
 
-  const btn = document.getElementById("btn-proses-import-siswa");
-  const original = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Membaca file...`;
+  function editSiswaJS(rowIndex) {
+    openSiswaFormJS(rowIndex);
+  }
 
-  const reader = new FileReader();
+  function deleteSiswaJS(rowIndex) {
+    showConfirmation("Yakin ingin menghapus data siswa ini?").then(
+      function (confirmed) {
+        if (!confirmed) return;
 
-  reader.onload = function (e) {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
+        google.script.run
+          .withSuccessHandler(function (res) {
+            if (res && res.success) {
+              loadSiswaJS();
+              alert(res.message);
+            } else {
+              alert(
+                "Gagal: " +
+                  (res && res.message ? res.message : "Terjadi kesalahan."),
+              );
+            }
+          })
+          .withFailureHandler(function (err) {
+            alert("Terjadi kesalahan:\n" + err.message);
+          })
+          .deleteSiswa(rowIndex);
+      },
+    );
+  }
 
-      // Ambil sheet pertama
-      const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
+  /* ========== EXPORT EXCEL (langsung .xlsx) ========== */
 
-      // Convert ke JSON (header di baris pertama)
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+  function exportSiswaJS() {
+    const btn = event.currentTarget;
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-1"></i> Menyiapkan file...`;
 
-      if (!jsonData || jsonData.length === 0) {
-        alert("File Excel kosong atau tidak ada data.");
+    google.script.run
+      .withSuccessHandler(function (res) {
         btn.disabled = false;
         btn.innerHTML = original;
-        return;
-      }
 
-      // Normalisasi nama kolom jadi huruf kecil
-      const dataArray = jsonData.map(function (row) {
-        const obj = {};
-        Object.keys(row).forEach(function (key) {
-          const cleanKey = String(key).trim().toLowerCase();
-          obj[cleanKey] = row[key];
+        if (res && res.success && res.downloadUrl) {
+          // Langsung trigger download
+          const a = document.createElement("a");
+          a.href = res.downloadUrl;
+          a.download = res.fileName || "Data_Siswa.xlsx";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+
+          alert(res.message);
+        } else {
+          alert(
+            "Gagal export: " +
+              (res && res.message ? res.message : "Terjadi kesalahan."),
+          );
+        }
+      })
+      .withFailureHandler(function (err) {
+        btn.disabled = false;
+        btn.innerHTML = original;
+        alert("Terjadi kesalahan:\n" + err.message);
+      })
+      .exportSiswaToExcel();
+  }
+
+  /* ========== IMPORT DARI FILE EXCEL ========== */
+
+  function openImportSiswaJS() {
+    document.getElementById("import-siswa-file").value = "";
+    document.getElementById("modal-import-siswa").classList.remove("hidden");
+  }
+
+  function closeImportSiswaJS() {
+    document.getElementById("modal-import-siswa").classList.add("hidden");
+  }
+
+  function prosesImportSiswaFileJS() {
+    const fileInput = document.getElementById("import-siswa-file");
+    const file = fileInput.files[0];
+
+    if (!file) {
+      alert("Silakan pilih file Excel terlebih dahulu.");
+      return;
+    }
+
+    const btn = document.getElementById("btn-proses-import-siswa");
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Membaca file...`;
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+
+        // Ambil sheet pertama
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+
+        // Convert ke JSON (header di baris pertama)
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+        if (!jsonData || jsonData.length === 0) {
+          alert("File Excel kosong atau tidak ada data.");
+          btn.disabled = false;
+          btn.innerHTML = original;
+          return;
+        }
+
+        // Normalisasi nama kolom jadi huruf kecil
+        const dataArray = jsonData.map(function (row) {
+          const obj = {};
+          Object.keys(row).forEach(function (key) {
+            const cleanKey = String(key).trim().toLowerCase();
+            obj[cleanKey] = row[key];
+          });
+
+          // Alias umum
+          if (!obj.nama_lengkap && obj.nama_siswa)
+            obj.nama_lengkap = obj.nama_siswa;
+          if (!obj.status_siswa && obj.status) obj.status_siswa = obj.status;
+
+          return obj;
         });
 
-        // Alias umum
-        if (!obj.nama_lengkap && obj.nama_siswa) obj.nama_lengkap = obj.nama_siswa;
-        if (!obj.status_siswa && obj.status) obj.status_siswa = obj.status;
+        // Validasi id_siswa
+        const hasId = dataArray.some(function (r) {
+          return r.id_siswa && String(r.id_siswa).trim() !== "";
+        });
 
-        return obj;
-      });
+        if (!hasId) {
+          alert("Kolom id_siswa tidak ditemukan atau semuanya kosong.");
+          btn.disabled = false;
+          btn.innerHTML = original;
+          return;
+        }
 
-      // Validasi id_siswa
-      const hasId = dataArray.some(function (r) {
-        return r.id_siswa && String(r.id_siswa).trim() !== "";
-      });
+        btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Mengirim data...`;
 
-      if (!hasId) {
-        alert("Kolom id_siswa tidak ditemukan atau semuanya kosong.");
+        // Kirim ke server
+        google.script.run
+          .withSuccessHandler(function (res) {
+            btn.disabled = false;
+            btn.innerHTML = original;
+
+            if (res && res.success) {
+              closeImportSiswaJS();
+              loadSiswaJS();
+              alert(res.message);
+            } else {
+              alert(
+                "Gagal import: " +
+                  (res && res.message ? res.message : "Terjadi kesalahan."),
+              );
+            }
+          })
+          .withFailureHandler(function (err) {
+            btn.disabled = false;
+            btn.innerHTML = original;
+            alert("Terjadi kesalahan:\n" + err.message);
+          })
+          .importSiswa(dataArray);
+      } catch (err) {
         btn.disabled = false;
         btn.innerHTML = original;
-        return;
+        alert("Gagal membaca file Excel:\n" + err.message);
       }
+    };
 
-      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Mengirim data...`;
-
-      // Kirim ke server
-      google.script.run
-        .withSuccessHandler(function (res) {
-          btn.disabled = false;
-          btn.innerHTML = original;
-
-          if (res && res.success) {
-            closeImportSiswaJS();
-            loadSiswaJS();
-            alert(res.message);
-          } else {
-            alert("Gagal import: " + (res && res.message ? res.message : "Terjadi kesalahan."));
-          }
-        })
-        .withFailureHandler(function (err) {
-          btn.disabled = false;
-          btn.innerHTML = original;
-          alert("Terjadi kesalahan:\n" + err.message);
-        })
-        .importSiswa(dataArray);
-
-    } catch (err) {
+    reader.onerror = function () {
       btn.disabled = false;
       btn.innerHTML = original;
-      alert("Gagal membaca file Excel:\n" + err.message);
-    }
-  };
+      alert("Gagal membaca file.");
+    };
 
-  reader.onerror = function () {
-    btn.disabled = false;
-    btn.innerHTML = original;
-    alert("Gagal membaca file.");
-  };
+    reader.readAsArrayBuffer(file);
+  }
 
-  reader.readAsArrayBuffer(file);
-}
+  // ===================== RIWAYAT SETTING TAGIHAN - STATE =====================
+  // Hanya deklarasikan jika belum ada
+  if (typeof currentRiwayatTab === "undefined") var currentRiwayatTab = "kelas";
+  if (typeof currentPageSettingKelas === "undefined")
+    var currentPageSettingKelas = 1;
+  if (typeof RIWAYAT_PER_PAGE === "undefined") var RIWAYAT_PER_PAGE = 10;
 
-// ===================== RIWAYAT SETTING TAGIHAN - STATE =====================
-// Hanya deklarasikan jika belum ada
-if (typeof currentRiwayatTab === 'undefined') var currentRiwayatTab = 'kelas';
-if (typeof currentPageSettingKelas === 'undefined') var currentPageSettingKelas = 1;
-if (typeof RIWAYAT_PER_PAGE === 'undefined') var RIWAYAT_PER_PAGE = 10;
+  // Jangan redeclare currentPageSetting kalau sudah ada di file lain
 
-// Jangan redeclare currentPageSetting kalau sudah ada di file lain
-
-// ===================== SWITCH TAB =====================
+  // ===================== SWITCH TAB =====================
+  /**
+ * Switch tab riwayat setting dengan auto-refresh
+ */
 function switchRiwayatSettingTab(tab) {
-  currentRiwayatTab = tab;
-
   var tabKelas = document.getElementById('tab-riwayat-kelas');
   var tabSiswa = document.getElementById('tab-riwayat-siswa');
   var panelKelas = document.getElementById('riwayat-tab-kelas');
   var panelSiswa = document.getElementById('riwayat-tab-siswa');
+  
+  if (tab === 'kelas') {
+    // Update tab styling
+    tabKelas.className = 'flex-1 sm:flex-none px-5 py-3.5 text-sm font-semibold border-b-2 border-emerald-600 text-emerald-700 bg-emerald-50/50 transition';
+    tabSiswa.className = 'flex-1 sm:flex-none px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition';
+    panelKelas.classList.remove('hidden');
+    panelSiswa.classList.add('hidden');
+    
+    // Refresh data jika perlu
+    if (window._needRefreshKelas || !window._kelasLoaded) {
+      window._kelasLoaded = true;
+      window._needRefreshKelas = false;
+      searchRiwayatKelas(1);
+    } else {
+      // Refresh dengan halaman terakhir
+      searchRiwayatKelas(riwayatKelasPage || 1);
+    }
+  } else {
+    // Update tab styling
+    tabSiswa.className = 'flex-1 sm:flex-none px-5 py-3.5 text-sm font-semibold border-b-2 border-emerald-600 text-emerald-700 bg-emerald-50/50 transition';
+    tabKelas.className = 'flex-1 sm:flex-none px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition';
+    panelSiswa.classList.remove('hidden');
+    panelKelas.classList.add('hidden');
+    
+    // Refresh data jika perlu
+    if (window._needRefreshSiswa || !window._siswaLoaded) {
+      window._siswaLoaded = true;
+      window._needRefreshSiswa = false;
+      searchRiwayatSiswa(1);
+    } else {
+      searchRiwayatSiswa(riwayatSiswaPage || 1);
+    }
+  }
+}
 
-  // Kalau elemen belum ada (HTML belum diupdate), hentikan saja biar tidak error
-  if (!tabKelas || !tabSiswa || !panelKelas || !panelSiswa) {
-    console.warn('Elemen tab riwayat belum ditemukan. Pastikan HTML sudah diupdate.');
+// Tambahkan variabel global untuk tracking refresh
+window._needRefreshKelas = false;
+window._needRefreshSiswa = false;
+
+  function refreshRiwayatSettingAktif() {
+    if (currentRiwayatTab === "kelas") {
+      loadRiwayatSettingKelasJS(1);
+    } else if (typeof loadRiwayatSettingTagihanJS === "function") {
+      loadRiwayatSettingTagihanJS(1);
+    }
+  }
+
+  // ===================== TAB 1: BERDASARKAN KELAS =====================
+  function loadRiwayatSettingKelasJS(page) {
+    page = page || 1;
+    if (page < 1) page = 1;
+    currentPageSettingKelas = page;
+
+    var tbody = document.getElementById("table-riwayat-kelas-body");
+    if (!tbody) {
+      console.warn("table-riwayat-kelas-body tidak ditemukan");
+      return;
+    }
+
+    tbody.innerHTML =
+      "<tr>" +
+      '<td colspan="8" class="p-10 text-center text-slate-400">' +
+      '<i class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"></i>' +
+      '<p class="text-sm">Memuat riwayat...</p>' +
+      "</td>" +
+      "</tr>";
+
+    var pagination = document.getElementById("riwayat-kelas-pagination");
+    if (pagination) pagination.classList.add("hidden");
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        renderRiwayatSettingKelas(result);
+      })
+      .withFailureHandler(function (err) {
+        tbody.innerHTML =
+          "<tr>" +
+          '<td colspan="8" class="p-10 text-center text-red-500">' +
+          '<i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i>' +
+          '<p class="text-sm">' +
+          (err.message || "Gagal memuat data") +
+          "</p>" +
+          "</td>" +
+          "</tr>";
+      })
+      .getRiwayatSettingKelas(page, RIWAYAT_PER_PAGE);
+  }
+
+  function renderRiwayatSettingKelas(result) {
+    var tbody = document.getElementById("table-riwayat-kelas-body");
+    var pagination = document.getElementById("riwayat-kelas-pagination");
+    var info = document.getElementById("riwayat-kelas-info");
+    var pageInfo = document.getElementById("riwayat-kelas-page-info");
+    var btnPrev = document.getElementById("btn-riwayat-kelas-prev");
+    var btnNext = document.getElementById("btn-riwayat-kelas-next");
+
+    if (!tbody) return;
+
+    if (!result || !result.data || result.data.length === 0) {
+      var pesan = "Belum ada riwayat setting tagihan";
+      if (result && result.error) {
+        pesan = result.error;
+      }
+
+      tbody.innerHTML =
+        "<tr>" +
+        '<td colspan="8" class="p-10 text-center text-slate-400">' +
+        '<i class="fa-solid fa-inbox text-3xl mb-2"></i>' +
+        '<p class="text-sm">' +
+        pesan +
+        "</p>" +
+        "</td>" +
+        "</tr>";
+      if (pagination) pagination.classList.add("hidden");
+      return;
+    }
+
+    var html = "";
+    result.data.forEach(function (row) {
+      var statusBadge =
+        typeof getStatusBadge === "function"
+          ? getStatusBadge(row.status)
+          : _getStatusBadgeFallback(row.status);
+
+      var totalFormatted =
+        typeof formatRupiah === "function"
+          ? formatRupiah(row.totalTagihan)
+          : _formatRupiahFallback(row.totalTagihan);
+
+      var nominalFormatted =
+        typeof formatRupiah === "function"
+          ? formatRupiah(row.nominal)
+          : _formatRupiahFallback(row.nominal);
+
+      html +=
+        '<tr class="hover:bg-slate-50 transition">' +
+        '<td class="p-4 whitespace-nowrap text-slate-600">' +
+        (row.tanggal || "-") +
+        "</td>" +
+        '<td class="p-4 font-medium text-slate-800">' +
+        (row.kelas || "-") +
+        "</td>" +
+        '<td class="p-4">' +
+        '<div class="font-medium text-slate-800">' +
+        (row.pos || "-") +
+        "</div>" +
+        '<div class="text-xs text-slate-500">' +
+        (row.periode || "-") +
+        "</div>" +
+        "</td>" +
+        '<td class="p-4 text-center">' +
+        '<span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">' +
+        (row.jumlahSiswa || 0) +
+        "</span>" +
+        "</td>" +
+        '<td class="p-4 text-right font-semibold text-slate-700">' +
+        nominalFormatted +
+        "</td>" +
+        '<td class="p-4 text-right font-bold text-emerald-700">' +
+        totalFormatted +
+        "</td>" +
+        '<td class="p-4 text-center">' +
+        statusBadge +
+        "</td>" +
+        '<td class="p-4 text-center">' +
+        '<div class="flex items-center justify-center gap-1.5">' +
+        "<button " +
+        "onclick=\"lihatDetailSettingKelas('" +
+        encodeURIComponent(row.kelas || "") +
+        "', '" +
+        encodeURIComponent(row.pos || "") +
+        "', '" +
+        encodeURIComponent(row.periode || "") +
+        "', '" +
+        (row.tanggalBatch || "") +
+        "')\" " +
+        'class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition" ' +
+        'title="Lihat detail siswa">' +
+        '<i class="fa-solid fa-eye"></i>' +
+        "</button>" +
+        "<button " +
+        "onclick=\"hapusSettingKelasJS('" +
+        encodeURIComponent(row.kelas || "") +
+        "', '" +
+        encodeURIComponent(row.pos || "") +
+        "', '" +
+        encodeURIComponent(row.periode || "") +
+        "', '" +
+        (row.tanggalBatch || "") +
+        "', " +
+        (row.jumlahSiswa || 0) +
+        ')" ' +
+        'class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition" ' +
+        'title="Hapus semua tagihan group ini">' +
+        '<i class="fa-solid fa-trash"></i>' +
+        "</button>" +
+        "</div>" +
+        "</td>" +
+        "</tr>";
+    });
+
+    tbody.innerHTML = html;
+
+    // Pagination
+    var totalPages = Math.ceil(result.total / RIWAYAT_PER_PAGE) || 1;
+    if (info)
+      info.textContent =
+        "Menampilkan " + result.data.length + " dari " + result.total + " data";
+    if (pageInfo) pageInfo.textContent = result.page + " / " + totalPages;
+    if (btnPrev) btnPrev.disabled = result.page <= 1;
+    if (btnNext) btnNext.disabled = result.page >= totalPages;
+    if (pagination) pagination.classList.remove("hidden");
+  }
+
+  function lihatDetailSettingKelas(kelas, pos, periode, tanggalBatch) {
+    switchRiwayatSettingTab("siswa");
+    console.log("Detail Setting:", {
+      kelas: decodeURIComponent(kelas || ""),
+      pos: decodeURIComponent(pos || ""),
+      periode: decodeURIComponent(periode || ""),
+      tanggalBatch: tanggalBatch,
+    });
+  }
+
+  // ===================== FALLBACK HELPER (hanya dipakai kalau belum ada) =====================
+  function _getStatusBadgeFallback(status) {
+    var s = (status || "").toLowerCase();
+    if (s === "lunas" || s === "paid") {
+      return '<span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">Lunas</span>';
+    }
+    if (s === "sebagian" || s === "partial") {
+      return '<span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">Sebagian</span>';
+    }
+    return '<span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">Belum Lunas</span>';
+  }
+
+  function _formatRupiahFallback(angka) {
+    if (angka === null || angka === undefined || isNaN(angka)) return "Rp 0";
+    return "Rp " + Number(angka).toLocaleString("id-ID");
+  }
+
+  /**
+   * Riwayat Setting Tagihan dikelompokkan per Kelas + Pos + Periode
+   * (join ke sheet Siswa untuk mendapatkan Kelas)
+   */
+  //Legacy server implementation moved to code.gs.
+  function getRiwayatSettingKelas(page, perPage) {
+    page = page || 1;
+    perPage = perPage || 10;
+
+    try {
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+      // ===== 1. Sheet Tagihan =====
+      let sheetTagihan =
+        ss.getSheetByName("Tagihan_Siswa") ||
+        ss.getSheetByName("Tagihan") ||
+        ss.getSheetByName("tagihan") ||
+        ss.getSheetByName("TAGIHAN");
+
+      if (!sheetTagihan) {
+        const sheets = ss.getSheets();
+        for (let i = 0; i < sheets.length; i++) {
+          if (sheets[i].getName().toLowerCase().indexOf("tagihan") !== -1) {
+            sheetTagihan = sheets[i];
+            break;
+          }
+        }
+      }
+
+      if (!sheetTagihan) {
+        return {
+          data: [],
+          total: 0,
+          page: 1,
+          error: "Sheet Tagihan tidak ditemukan",
+        };
+      }
+
+      const dataTagihan = sheetTagihan.getDataRange().getValues();
+      if (dataTagihan.length <= 1) {
+        return { data: [], total: 0, page: 1, error: "Sheet Tagihan kosong" };
+      }
+
+      const headersT = dataTagihan[0].map(function (h) {
+        return String(h || "")
+          .toLowerCase()
+          .trim();
+      });
+
+      function findCol(headers, names) {
+        for (let i = 0; i < names.length; i++) {
+          const idx = headers.indexOf(names[i]);
+          if (idx !== -1) return idx;
+        }
+        for (let i = 0; i < headers.length; i++) {
+          for (let j = 0; j < names.length; j++) {
+            if (headers[i].indexOf(names[j]) !== -1) return i;
+          }
+        }
+        return -1;
+      }
+
+      const col = {
+        idSiswa: findCol(headersT, ["id_siswa", "idsiswa", "id siswa"]),
+        idPos: findCol(headersT, ["id_pos", "idpos", "id pos"]),
+        periode: findCol(headersT, ["periode"]),
+        namaItem: findCol(headersT, [
+          "nama_item_snapshot",
+          "nama item",
+          "nama_item",
+          "nama pos",
+        ]),
+        nominal: findCol(headersT, [
+          "nominal_akhir",
+          "nominal_asal",
+          "nominal",
+        ]),
+        tanggal: findCol(headersT, ["tanggal_tagihan", "tanggal", "tgl"]),
+        status: findCol(headersT, ["status", "status_siswa"]),
+      };
+
+      if (col.idSiswa === -1) {
+        return {
+          data: [],
+          total: 0,
+          page: 1,
+          error:
+            "Kolom id_siswa tidak ditemukan. Header: [" +
+            headersT.join(" | ") +
+            "]",
+        };
+      }
+
+      // ===== 2. Sheet Siswa → map id_siswa → kelas =====
+      let sheetSiswa =
+        ss.getSheetByName("Siswa") ||
+        ss.getSheetByName("siswa") ||
+        ss.getSheetByName("SISWA") ||
+        ss.getSheetByName("Data Siswa");
+
+      if (!sheetSiswa) {
+        const sheets = ss.getSheets();
+        for (let i = 0; i < sheets.length; i++) {
+          const n = sheets[i].getName().toLowerCase();
+          if (n.indexOf("siswa") !== -1 && n.indexOf("tagihan") === -1) {
+            sheetSiswa = sheets[i];
+            break;
+          }
+        }
+      }
+
+      const mapSiswaKelas = {}; // id_siswa → kelas
+
+      if (sheetSiswa) {
+        const dataSiswa = sheetSiswa.getDataRange().getValues();
+        if (dataSiswa.length > 1) {
+          const headersS = dataSiswa[0].map(function (h) {
+            return String(h || "")
+              .toLowerCase()
+              .trim();
+          });
+
+          const colSiswaId = findCol(headersS, [
+            "id_siswa",
+            "id",
+            "idsiswa",
+            "nis",
+            "nisn",
+          ]);
+          const colSiswaKelas = findCol(headersS, [
+            "kelas",
+            "nama_kelas",
+            "class",
+            "kelas_saat_ini",
+          ]);
+
+          if (colSiswaId !== -1 && colSiswaKelas !== -1) {
+            for (let i = 1; i < dataSiswa.length; i++) {
+              const id = String(dataSiswa[i][colSiswaId] || "").trim();
+              const kelas = String(dataSiswa[i][colSiswaKelas] || "").trim();
+              if (id) mapSiswaKelas[id] = kelas || "-";
+            }
+          }
+        }
+      }
+
+      // ===== 3. (Opsional) Sheet Pos → map id_pos → nama =====
+      const mapPosNama = {};
+      let sheetPos =
+        ss.getSheetByName("Pos") ||
+        ss.getSheetByName("pos") ||
+        ss.getSheetByName("Pos Pembayaran") ||
+        ss.getSheetByName("pos_pembayaran");
+
+      if (sheetPos) {
+        const dataPos = sheetPos.getDataRange().getValues();
+        if (dataPos.length > 1) {
+          const headersP = dataPos[0].map(function (h) {
+            return String(h || "")
+              .toLowerCase()
+              .trim();
+          });
+          const colPosId = findCol(headersP, ["id_pos", "id", "idpos"]);
+          const colPosNama = findCol(headersP, [
+            "nama",
+            "nama_pos",
+            "nama pos",
+            "pos",
+          ]);
+
+          if (colPosId !== -1 && colPosNama !== -1) {
+            for (let i = 1; i < dataPos.length; i++) {
+              const id = String(dataPos[i][colPosId] || "").trim();
+              const nama = String(dataPos[i][colPosNama] || "").trim();
+              if (id) mapPosNama[id] = nama || id;
+            }
+          }
+        }
+      }
+
+      // ===== 4. Agregasi =====
+      const groupMap = {};
+
+      for (let i = 1; i < dataTagihan.length; i++) {
+        const row = dataTagihan[i];
+
+        const idSiswa = String(row[col.idSiswa] || "").trim();
+        if (!idSiswa) continue;
+
+        // Ambil kelas dari map Siswa
+        const kelas = mapSiswaKelas[idSiswa] || "Tidak diketahui";
+
+        // Nama Pos: prioritaskan nama_item_snapshot, fallback ke mapPos
+        let posNama = "-";
+        if (col.namaItem !== -1 && row[col.namaItem]) {
+          posNama = String(row[col.namaItem]).trim();
+        } else if (col.idPos !== -1) {
+          const idPos = String(row[col.idPos] || "").trim();
+          posNama = mapPosNama[idPos] || idPos || "-";
+        }
+
+        const periode =
+          col.periode !== -1 ? String(row[col.periode] || "").trim() : "-";
+
+        // Tanggal
+        let tanggalStr = "-";
+        let tanggalBatch = "";
+        if (col.tanggal !== -1 && row[col.tanggal]) {
+          const t = row[col.tanggal];
+          if (
+            Object.prototype.toString.call(t) === "[object Date]" &&
+            !isNaN(t.getTime())
+          ) {
+            tanggalStr = Utilities.formatDate(
+              t,
+              Session.getScriptTimeZone(),
+              "dd/MM/yyyy",
+            );
+            tanggalBatch = Utilities.formatDate(
+              t,
+              Session.getScriptTimeZone(),
+              "yyyy-MM-dd",
+            );
+          } else {
+            tanggalStr = String(t);
+            tanggalBatch = tanggalStr;
+          }
+        }
+
+        // Key grouping
+        const key = kelas + "|" + posNama + "|" + periode + "|" + tanggalBatch;
+
+        if (!groupMap[key]) {
+          groupMap[key] = {
+            tanggal: tanggalStr,
+            tanggalBatch: tanggalBatch,
+            kelas: kelas,
+            pos: posNama,
+            periode: periode,
+            jumlahSiswa: 0,
+            nominal: 0,
+            totalTagihan: 0,
+            statusCount: { lunas: 0, sebagian: 0, belum: 0 },
+            status: "Belum Lunas",
+          };
+        }
+
+        const g = groupMap[key];
+        g.jumlahSiswa += 1;
+
+        const nominal = col.nominal !== -1 ? Number(row[col.nominal]) || 0 : 0;
+        if (g.nominal === 0 && nominal > 0) g.nominal = nominal;
+        g.totalTagihan += nominal;
+
+        // Status
+        if (col.status !== -1) {
+          const st = String(row[col.status] || "").toLowerCase();
+          if (st.indexOf("lunas") !== -1 || st === "paid") {
+            g.statusCount.lunas += 1;
+          } else if (
+            st.indexOf("sebagian") !== -1 ||
+            st === "partial" ||
+            st.indexOf("cicil") !== -1
+          ) {
+            g.statusCount.sebagian += 1;
+          } else {
+            g.statusCount.belum += 1;
+          }
+        } else {
+          g.statusCount.belum += 1;
+        }
+      }
+
+      // Status final
+      const list = [];
+      for (const key in groupMap) {
+        const g = groupMap[key];
+        if (g.jumlahSiswa > 0 && g.statusCount.lunas === g.jumlahSiswa) {
+          g.status = "Lunas";
+        } else if (g.statusCount.lunas > 0 || g.statusCount.sebagian > 0) {
+          g.status = "Sebagian";
+        } else {
+          g.status = "Belum Lunas";
+        }
+        list.push(g);
+      }
+
+      // Urutkan terbaru
+      list.sort(function (a, b) {
+        if (a.tanggalBatch && b.tanggalBatch) {
+          return b.tanggalBatch.localeCompare(a.tanggalBatch);
+        }
+        return 0;
+      });
+
+      const total = list.length;
+      const start = (page - 1) * perPage;
+      const paged = list.slice(start, start + perPage);
+
+      // Cek apakah map siswa berhasil
+      const jumlahMapSiswa = Object.keys(mapSiswaKelas).length;
+
+      return {
+        data: paged,
+        total: total,
+        page: page,
+        _debug: {
+          sheetTagihan: sheetTagihan.getName(),
+          sheetSiswa: sheetSiswa ? sheetSiswa.getName() : "TIDAK DITEMUKAN",
+          jumlahMapSiswa: jumlahMapSiswa,
+          totalGroup: total,
+          sampleKelas: list.length > 0 ? list[0].kelas : null,
+        },
+      };
+    } catch (err) {
+      return {
+        data: [],
+        total: 0,
+        page: 1,
+        error: err.message,
+      };
+    }
+  }
+
+  // ===== Helper pagination (aman untuk onclick HTML) =====
+  function goRiwayatSiswaPrev() {
+    var page =
+      (typeof currentPageSetting !== "undefined" ? currentPageSetting : 1) - 1;
+    loadRiwayatSettingTagihanJS(page);
+  }
+
+  function goRiwayatSiswaNext() {
+    var page =
+      (typeof currentPageSetting !== "undefined" ? currentPageSetting : 1) + 1;
+    loadRiwayatSettingTagihanJS(page);
+  }
+
+  function goRiwayatKelasPrev() {
+    var page =
+      (typeof currentPageSettingKelas !== "undefined"
+        ? currentPageSettingKelas
+        : 1) - 1;
+    loadRiwayatSettingKelasJS(page);
+  }
+
+  function goRiwayatKelasNext() {
+    var page =
+      (typeof currentPageSettingKelas !== "undefined"
+        ? currentPageSettingKelas
+        : 1) + 1;
+    loadRiwayatSettingKelasJS(page);
+  }
+
+  function showHapusProgressModal(total) {
+    var modal = document.getElementById("modal-hapus-progress");
+    if (!modal) return;
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+
+    updateHapusProgress(0, total, "Memulai penghapusan...");
+  }
+
+  function hideHapusProgressModal() {
+    var modal = document.getElementById("modal-hapus-progress");
+    if (!modal) return;
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+
+  function updateHapusProgress(done, total, statusText) {
+    total = total || 0;
+    done = done || 0;
+    var pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
+
+    var bar = document.getElementById("hapus-progress-bar");
+    var label = document.getElementById("hapus-progress-label");
+    var count = document.getElementById("hapus-progress-count");
+    var status = document.getElementById("hapus-progress-status");
+    var subtitle = document.getElementById("hapus-progress-subtitle");
+
+    if (bar) bar.style.width = pct + "%";
+    if (label) label.textContent = pct + "%";
+    if (count) count.textContent = done + " / " + total;
+    if (status && statusText) status.textContent = statusText;
+    if (subtitle)
+      subtitle.textContent =
+        total > 0 ? "Menghapus " + total + " tagihan" : "Memproses...";
+  }
+
+  function hapusSettingKelasJS(
+    kelasEnc,
+    posEnc,
+    periodeEnc,
+    tanggalBatch,
+    jumlahSiswa,
+  ) {
+    var kelas = decodeURIComponent(kelasEnc || "");
+    var pos = decodeURIComponent(posEnc || "");
+    var periode = decodeURIComponent(periodeEnc || "");
+    jumlahSiswa = Number(jumlahSiswa) || 0;
+
+    var pesan =
+      "Hapus setting tagihan ini?\n\n" +
+      "Kelas   : " +
+      kelas +
+      "\n" +
+      "Pos     : " +
+      pos +
+      "\n" +
+      "Periode : " +
+      periode +
+      "\n" +
+      "Tanggal : " +
+      (tanggalBatch || "-") +
+      "\n" +
+      "Jumlah  : " +
+      jumlahSiswa +
+      " siswa\n\n" +
+      "Catatan: tagihan yang sudah ada pembayaran TIDAK akan dihapus.\n" +
+      "Lanjutkan?";
+
+    showConfirmation(pesan).then(function (confirmed) {
+      if (!confirmed) return;
+
+      showHapusProgressModal(jumlahSiswa);
+
+      var BATCH_SIZE = 20;
+      var totalDeleted = 0;
+      var totalSkipped = 0;
+      var totalTarget = jumlahSiswa;
+      var finished = false;
+
+      function jalankanBatch() {
+        google.script.run
+          .withSuccessHandler(function (result) {
+            if (!result || !result.success) {
+              hideHapusProgressModal();
+              alert(
+                "Gagal menghapus: " +
+                  ((result && result.message) || "Unknown error"),
+              );
+              return;
+            }
+
+            totalDeleted += result.deleted || 0;
+            if (result.skipped) totalSkipped = result.skipped; // total skipped dihitung penuh tiap batch
+
+            var remaining = result.remaining || 0;
+
+            if (result.totalDeletable && result.totalDeletable > 0) {
+              totalTarget = result.totalDeletable + (result.skipped || 0);
+            }
+
+            var done = totalDeleted + totalSkipped;
+            if (result.totalMatched) {
+              done = Math.min(result.totalMatched, totalDeleted + totalSkipped);
+              totalTarget = result.totalMatched;
+            }
+
+            updateHapusProgress(
+              Math.min(done, totalTarget),
+              totalTarget,
+              remaining > 0
+                ? "Menghapus... sisa " + remaining + " data belum dibayar"
+                : "Menyelesaikan...",
+            );
+
+            // Tidak ada yang bisa dihapus sama sekali
+            if (
+              totalDeleted === 0 &&
+              remaining === 0 &&
+              (result.deleted || 0) === 0
+            ) {
+              if (finished) return;
+              finished = true;
+              updateHapusProgress(totalTarget, totalTarget, "Selesai");
+              setTimeout(function () {
+                hideHapusProgressModal();
+                if (totalSkipped > 0) {
+                  alert(
+                    "Tidak ada tagihan yang dihapus.\n\n" +
+                      totalSkipped +
+                      " tagihan dilindungi karena sudah ada pembayaran.",
+                  );
+                } else {
+                  alert(result.message || "Tidak ada data yang dihapus.");
+                }
+                loadRiwayatSettingKelasJS(currentPageSettingKelas || 1);
+              }, 400);
+              return;
+            }
+
+            if (remaining > 0 && (result.deleted || 0) > 0) {
+              jalankanBatch();
+            } else {
+              if (finished) return;
+              finished = true;
+              updateHapusProgress(totalTarget, totalTarget, "Selesai!");
+              setTimeout(function () {
+                hideHapusProgressModal();
+                var msg = "Berhasil menghapus " + totalDeleted + " tagihan.";
+                if (totalSkipped > 0) {
+                  msg +=
+                    "\n" +
+                    totalSkipped +
+                    " tagihan tidak dihapus karena sudah ada pembayaran.";
+                }
+                alert(msg);
+                loadRiwayatSettingKelasJS(currentPageSettingKelas || 1);
+              }, 400);
+            }
+          })
+          .withFailureHandler(function (err) {
+            hideHapusProgressModal();
+            alert("Gagal menghapus: " + (err.message || err));
+          })
+          .hapusSettingKelasBatch(
+            kelas,
+            pos,
+            periode,
+            tanggalBatch,
+            BATCH_SIZE,
+          );
+      }
+
+      jalankanBatch();
+    });
+  }
+
+window.prosesCetakDanSimpanPDF = function() {
+  const getText = (id) => {
+    const el = document.getElementById(id);
+    return el ? el.innerText.trim() : "";
+  };
+
+  let payload = {};
+
+  // LAPIS 1: Ambil dari objek JS jika tersedia (dari Riwayat Transaksi)
+  if (typeof detailTransaksiAktif !== 'undefined' && detailTransaksiAktif && detailTransaksiAktif.transaksi) {
+    const trx = detailTransaksiAktif.transaksi;
+    const detail = detailTransaksiAktif.detail || [];
+
+    payload = {
+      noKuitansi: trx.no_kuitansi || "-",
+      tanggal: trx.tanggal || "-",
+      kasir: trx.nama_kasir || "Admin Kasir",
+      namaSiswa: trx.nama_siswa || "-",
+      nisn: trx.nisn || "-",
+      kelas: trx.kelas || "-",
+      items: detail.map(function(item) {
+        return {
+          nama_item: item.nama_item || "-",
+          diskon_tambahan: Number(item.diskon_tambahan) || 0,
+          nominal_dibayar: Number(item.nominal_dibayar) || 0
+        };
+      }),
+      total: Number(trx.total_bayar) || 0,
+      metode: typeof getLabelMetodePembayaran === 'function' ? getLabelMetodePembayaran(trx.metode_pembayaran) : (trx.metode_pembayaran || "-"),
+      catatan: trx.catatan || ""
+    };
+  } 
+  // LAPIS 2 (FALLBACK): Ambil langsung dari elemen DOM Modal Kuitansi (dari Kasir/Transaksi Baru)
+  else {
+    const itemsContainer = document.getElementById("kw-items-list");
+    let itemsList = [];
+
+    if (itemsContainer) {
+      const itemRows = itemsContainer.querySelectorAll('.flex.justify-between');
+      itemRows.forEach(row => {
+        const nameEl = row.querySelector('.font-bold');
+        const priceEl = row.querySelector('.text-right');
+        if (nameEl && priceEl) {
+          itemsList.push({
+            nama_item: nameEl.innerText.trim(),
+            diskon_tambahan: 0,
+            nominal_dibayar: Number(priceEl.innerText.replace(/[^0-9]/g, '')) || 0
+          });
+        }
+      });
+    }
+
+    // Pemisahan NISN dan Kelas dari format "NISN / Kelas X"
+    const nisnKelasRaw = getText("kw-siswa-nisn");
+    const parts = nisnKelasRaw.split("/");
+    const nisnVal = parts[0] ? parts[0].trim() : "-";
+    const kelasVal = parts[1] ? parts[1].replace(/Kelas/i, '').trim() : "-";
+
+    payload = {
+      noKuitansi: getText("kw-no") || "-",
+      tanggal: getText("kw-tgl") || "-",
+      kasir: getText("kw-kasir") || "Admin Kasir",
+      namaSiswa: getText("kw-siswa-nama") || "-",
+      nisn: nisnVal,
+      kelas: kelasVal,
+      items: itemsList.length > 0 ? itemsList : [{
+        nama_item: "Pembayaran Keuangan",
+        diskon_tambahan: 0,
+        nominal_dibayar: Number(getText("kw-total").replace(/[^0-9]/g, '')) || 0
+      }],
+      total: Number(getText("kw-total").replace(/[^0-9]/g, '')) || 0,
+      metode: getText("kw-metode") || "-",
+      catatan: getText("kw-catatan") || ""
+    };
+  }
+
+  // Validasi keamanan: Pastikan nomor kuitansi terisi
+  if (!payload.noKuitansi || payload.noKuitansi === "-") {
+    alert("Data kuitansi belum dimuat dengan sempurna.");
     return;
   }
 
-  var activeClass = 'flex-1 sm:flex-none px-5 py-3.5 text-sm font-semibold border-b-2 border-emerald-600 text-emerald-700 bg-emerald-50/50 transition';
-  var inactiveClass = 'flex-1 sm:flex-none px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition';
+  // Tampilkan Indikator Loading
+  if (typeof Swal !== 'undefined') {
+    Swal.fire({
+      title: 'Memproses Nota...',
+      text: 'Membuat PDF & Mencatat ke Sheet',
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading()
+    });
+  }
 
+  // Kirim ke Backend Google Apps Script
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (typeof Swal !== 'undefined') Swal.close();
+      if (res && res.pdfUrl) {
+        window.open(res.pdfUrl, '_blank');
+        window.print();
+      }
+    })
+    .withFailureHandler(function(err) {
+      const msg = err.message || err;
+      if (typeof Swal !== 'undefined') {
+        Swal.fire('Gagal!', 'Terjadi kesalahan: ' + msg, 'error');
+      } else {
+        alert('Gagal: ' + msg);
+      }
+    })
+    .simpanLogCetakNota(payload);
+};
+////////////////
+// ============================================================
+// VARIABEL GLOBAL
+// ============================================================
+
+// Untuk riwayat kelas
+var riwayatKelasPage = 1;
+var riwayatKelasKeyword = '';
+var riwayatKelasPos = 'ALL';
+var riwayatKelasTotalPages = 1;
+var riwayatKelasTotalData = 0;
+
+// Untuk riwayat siswa
+var riwayatSiswaPage = 1;
+var riwayatSiswaKeyword = '';
+var riwayatSiswaKelas = 'ALL';
+var riwayatSiswaPos = 'ALL';
+var riwayatSiswaStatus = 'ALL';
+var riwayatSiswaTotalPages = 1;
+var riwayatSiswaTotalData = 0;
+
+// Flag untuk tracking refresh
+window._kelasLoaded = false;
+window._siswaLoaded = false;
+window._needRefreshKelas = false;
+window._needRefreshSiswa = false;
+
+// Data siswa
+var allSiswaData = [];
+var filteredSiswaData = [];
+
+// ============================================================
+// PENCARIAN RIWAYAT - TAB KELAS
+// ============================================================
+
+function searchRiwayatKelas(page) {
+  if (page === undefined || page === null) {
+    page = riwayatKelasPage || 1;
+  } else {
+    riwayatKelasPage = page;
+  }
+  
+  var keywordInput = document.getElementById('search-kelas-keyword');
+  var posSelect = document.getElementById('search-kelas-pos');
+  
+  if (keywordInput) {
+    riwayatKelasKeyword = keywordInput.value;
+  }
+  if (posSelect) {
+    riwayatKelasPos = posSelect.value;
+  }
+  
+  var container = document.getElementById('table-riwayat-kelas-body');
+  if (!container) {
+    console.error('Container table-riwayat-kelas-body tidak ditemukan');
+    return;
+  }
+  
+  container.innerHTML = `
+    <tr>
+      <td colspan="9" class="p-10 text-center text-slate-400">
+        <i class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"></i>
+        <p class="text-sm">Mencari data...</p>
+      </td>
+    </tr>
+  `;
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (result.success) {
+        riwayatKelasTotalPages = result.total_pages || 1;
+        riwayatKelasTotalData = result.total || 0;
+        renderRiwayatKelas(result);
+      } else {
+        renderRiwayatKelasError(result.message || 'Gagal memuat data');
+      }
+    })
+    .withFailureHandler(function(err) {
+      renderRiwayatKelasError(err.message);
+    })
+    .cariSettingTagihanByKelas(riwayatKelasKeyword, riwayatKelasPos, riwayatKelasPage, 10);
+}
+
+function renderRiwayatKelas(result) {
+  var container = document.getElementById('table-riwayat-kelas-body');
+  var pagination = document.getElementById('riwayat-kelas-pagination');
+  var info = document.getElementById('riwayat-kelas-info');
+  var pageInfo = document.getElementById('riwayat-kelas-page-info');
+  var prevBtn = document.getElementById('btn-riwayat-kelas-prev');
+  var nextBtn = document.getElementById('btn-riwayat-kelas-next');
+  
+  if (!result.data || result.data.length === 0) {
+    container.innerHTML = `
+      <tr>
+        <td colspan="9" class="p-10 text-center text-slate-400">
+          <i class="fa-solid fa-search text-2xl mb-2 text-slate-300"></i>
+          <p class="text-sm">Tidak ada data ditemukan</p>
+        </td>
+      </tr>
+    `;
+    pagination.classList.add('hidden');
+    return;
+  }
+  
+  var html = '';
+  result.data.forEach(function(item) {
+    var statusClass = getStatusBadgeClass(item.status);
+    var safeKelas = (item.kelas || '').replace(/"/g, '&quot;');
+    var safePos = (item.pos || '').replace(/"/g, '&quot;');
+    var safePeriode = (item.periode || '').replace(/"/g, '&quot;');
+    var safeTanggal = (item.tanggalBatch || '').replace(/"/g, '&quot;');
+    var safeIdPos = (item.id_pos || '').replace(/"/g, '&quot;');
+    
+    // ============================================================
+    // CEK APAKAH ADA TAGIHAN YANG SUDAH DIBAYAR
+    // ============================================================
+    var hasPaid = false;
+    var paidCount = 0;
+    
+    // Cek dari statusCount jika ada
+    if (item.statusCount) {
+      if (item.statusCount.lunas > 0 || item.statusCount.sebagian > 0) {
+        hasPaid = true;
+        paidCount = (item.statusCount.lunas || 0) + (item.statusCount.sebagian || 0);
+      }
+    }
+    
+    // Alternatif: cek dari status jika statusnya "Lunas" atau "Sebagian"
+    if (!hasPaid && item.status) {
+      var statusUpper = (item.status || '').toUpperCase();
+      if (statusUpper === 'LUNAS' || statusUpper === 'SEBAGIAN' || statusUpper === 'CICILAN') {
+        hasPaid = true;
+      }
+    }
+    
+    // Tentukan class dan title untuk tombol hapus
+    var deleteBtnClass = hasPaid 
+      ? 'px-3 py-1.5 bg-slate-100 text-slate-400 rounded-lg text-xs font-medium cursor-not-allowed' 
+      : 'px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-medium transition';
+    
+    var deleteBtnDisabled = hasPaid ? 'disabled' : '';
+    var deleteBtnTitle = hasPaid 
+      ? 'Tidak dapat dihapus karena ada ' + paidCount + ' tagihan yang sudah dibayar (LUNAS/CICILAN)' 
+      : 'Hapus semua tagihan group ini';
+    var deleteBtnOnclick = hasPaid 
+      ? 'showCannotDeleteAlert()' 
+      : "hapusSettingKelas('" + safeKelas + "', '" + safePos + "', '" + safePeriode + "', '" + safeTanggal + "')";
+    
+    // Tampilkan badge warning jika ada yang sudah dibayar
+    var paidBadge = hasPaid 
+      ? '<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700"><i class="fa-solid fa-lock mr-0.5"></i> ' + paidCount + ' dibayar</span>' 
+      : '';
+    
+    html += `
+      <tr class="hover:bg-slate-50 transition ${hasPaid ? 'opacity-75' : ''}">
+        <td class="p-4 whitespace-nowrap">${item.tanggal || '-'}</td>
+        <td class="p-4 font-medium">${item.kelas || '-'}</td>
+        <td class="p-4">
+          <div class="font-medium">${item.pos || '-'}</div>
+          <div class="text-xs text-slate-500">${item.periode || '-'}</div>
+        </td>
+        <td class="p-4 text-center font-semibold">${item.jumlahSiswa || 0}</td>
+        <td class="p-4 text-right font-medium text-emerald-700">
+          Rp ${(item.nominal || 0).toLocaleString('id-ID')}
+        </td>
+        <td class="p-4 text-right font-bold">
+          Rp ${(item.totalTagihan || 0).toLocaleString('id-ID')}
+        </td>
+        <td class="p-4 text-center">
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${statusClass}">
+            ${item.status || '-'}
+          </span>
+          ${paidBadge}
+        </td>
+        <td class="p-4 text-center">
+          <button
+            onclick="showDetailByKelas('${safeKelas}', '${safePos}', '${safePeriode}', '${safeTanggal}', '${safeIdPos}')"
+            class="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-xs font-medium transition"
+            title="Lihat detail siswa"
+          >
+            <i class="fa-solid fa-eye"></i> Detail
+          </button>
+        </td>
+        <td class="p-4 text-center">
+          <button
+            onclick="${deleteBtnOnclick}"
+            class="${deleteBtnClass}"
+            title="${deleteBtnTitle}"
+            ${deleteBtnDisabled}
+          >
+            <i class="fa-solid fa-trash"></i> Hapus
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+  
+  container.innerHTML = html;
+  
+  var total = result.total || 0;
+  var totalPages = result.total_pages || 1;
+  var currentPage = result.page || 1;
+  
+  riwayatKelasPage = currentPage;
+  riwayatKelasTotalPages = totalPages;
+  riwayatKelasTotalData = total;
+  
+  var startData = (currentPage - 1) * result.limit + 1;
+  var endData = Math.min(currentPage * result.limit, total);
+  
+  info.textContent = 'Menampilkan ' + startData + ' - ' + endData + ' dari ' + total + ' data';
+  pageInfo.textContent = currentPage + ' / ' + totalPages;
+  prevBtn.disabled = currentPage <= 1;
+  nextBtn.disabled = currentPage >= totalPages;
+  pagination.classList.remove('hidden');
+}
+
+// ============================================================
+// FUNGSI UNTUK MENAMPILKAN ALERT TIDAK BISA DIHAPUS
+// ============================================================
+
+function showCannotDeleteAlert() {
+  Swal.fire({
+    icon: 'warning',
+    title: 'Tidak Dapat Dihapus',
+    html: `
+      <div style="text-align: left; padding: 10px 0;">
+        <p style="color: #dc2626; font-weight: bold;">⚠️ Setting tagihan ini tidak dapat dihapus!</p>
+        <p>Karena sudah ada tagihan yang memiliki pembayaran (LUNAS/CICILAN).</p>
+        <p style="font-size: 12px; color: #64748b; margin-top: 10px;">
+          Tagihan yang sudah dibayar tidak dapat dihapus untuk menjaga integritas data keuangan.
+        </p>
+      </div>
+    `,
+    confirmButtonColor: '#64748b',
+    confirmButtonText: 'OK'
+  });
+}
+
+function renderRiwayatKelasError(message) {
+  var container = document.getElementById('table-riwayat-kelas-body');
+  container.innerHTML = `
+    <tr>
+      <td colspan="9" class="p-10 text-center text-red-500">
+        <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i>
+        <p class="text-sm">${message}</p>
+      </td>
+    </tr>
+  `;
+  document.getElementById('riwayat-kelas-pagination').classList.add('hidden');
+}
+
+function goRiwayatKelasPrev() {
+  if (riwayatKelasPage > 1) {
+    searchRiwayatKelas(riwayatKelasPage - 1);
+  }
+}
+
+function goRiwayatKelasNext() {
+  if (riwayatKelasPage < riwayatKelasTotalPages) {
+    searchRiwayatKelas(riwayatKelasPage + 1);
+  }
+}
+
+// ============================================================
+// PENCARIAN RIWAYAT - TAB SISWA
+// ============================================================
+
+function searchRiwayatSiswa(page) {
+  if (page === undefined || page === null) {
+    page = riwayatSiswaPage || 1;
+  } else {
+    riwayatSiswaPage = page;
+  }
+  
+  var keywordInput = document.getElementById('search-siswa-keyword');
+  var kelasSelect = document.getElementById('search-siswa-kelas');
+  var posSelect = document.getElementById('search-siswa-pos');
+  var statusSelect = document.getElementById('search-siswa-status');
+  
+  if (keywordInput) riwayatSiswaKeyword = keywordInput.value;
+  if (kelasSelect) riwayatSiswaKelas = kelasSelect.value;
+  if (posSelect) riwayatSiswaPos = posSelect.value;
+  if (statusSelect) riwayatSiswaStatus = statusSelect.value;
+  
+  var container = document.getElementById('table-riwayat-setting-body');
+  if (!container) {
+    console.error('Container table-riwayat-setting-body tidak ditemukan');
+    return;
+  }
+  
+  container.innerHTML = `
+    <tr>
+      <td colspan="8" class="p-10 text-center text-slate-400">
+        <i class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"></i>
+        <p class="text-sm">Mencari data...</p>
+      </td>
+    </tr>
+  `;
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (result.success) {
+        riwayatSiswaTotalPages = result.total_pages || 1;
+        riwayatSiswaTotalData = result.total || 0;
+        renderRiwayatSiswa(result);
+      } else {
+        renderRiwayatSiswaError(result.message || 'Gagal memuat data');
+      }
+    })
+    .withFailureHandler(function(err) {
+      renderRiwayatSiswaError(err.message);
+    })
+    .cariSettingTagihanBySiswa(riwayatSiswaKeyword, riwayatSiswaPos, riwayatSiswaKelas, riwayatSiswaStatus, riwayatSiswaPage, 10);
+}
+
+function renderRiwayatSiswa(result) {
+  var container = document.getElementById('table-riwayat-setting-body');
+  var pagination = document.getElementById('riwayat-setting-pagination');
+  var info = document.getElementById('riwayat-setting-info');
+  var pageInfo = document.getElementById('riwayat-setting-page-info');
+  var prevBtn = document.getElementById('btn-riwayat-prev');
+  var nextBtn = document.getElementById('btn-riwayat-next');
+  
+  if (!result.data || result.data.length === 0) {
+    container.innerHTML = `
+      <tr>
+        <td colspan="8" class="p-10 text-center text-slate-400">
+          <i class="fa-solid fa-search text-2xl mb-2 text-slate-300"></i>
+          <p class="text-sm">Tidak ada data ditemukan</p>
+        </td>
+      </tr>
+    `;
+    pagination.classList.add('hidden');
+    return;
+  }
+  
+  var html = '';
+  result.data.forEach(function(item) {
+    var statusClass = getStatusBadgeClass(item.status);
+    var isPaid = item.status === 'LUNAS' || item.terbayar > 0;
+    
+    html += `
+      <tr class="hover:bg-slate-50 transition ${isPaid ? 'opacity-60' : ''}">
+        <td class="p-4 whitespace-nowrap">${item.tanggal_tagihan || '-'}</td>
+        <td class="p-4 whitespace-nowrap font-mono text-xs">${item.id_tagihan || '-'}</td>
+        <td class="p-4">
+          <div class="font-medium">${item.nama_siswa || '-'}</div>
+          <div class="text-xs text-slate-500">NISN: ${item.nisn || '-'}</div>
+        </td>
+        <td class="p-4">${item.kelas || '-'}</td>
+        <td class="p-4">
+          <div class="font-medium">${item.nama_pos || '-'}</div>
+          <div class="text-xs text-slate-500">${item.periode || '-'}</div>
+        </td>
+        <td class="p-4 text-right">
+          <div class="font-medium">Rp ${(item.nominal_akhir || 0).toLocaleString('id-ID')}</div>
+          <div class="text-xs text-slate-500">
+            Bayar: Rp ${(item.terbayar || 0).toLocaleString('id-ID')} | Sisa: Rp ${(item.sisa_tunggakan || 0).toLocaleString('id-ID')}
+          </div>
+        </td>
+        <td class="p-4 text-center">
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${statusClass}">
+            ${item.status || '-'}
+          </span>
+        </td>
+        <td class="p-4 text-center">
+          <button
+            onclick="hapusTagihanSiswa('${item.id_tagihan}')"
+            class="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-medium transition ${isPaid ? 'opacity-40 cursor-not-allowed' : ''}"
+            title="${isPaid ? 'Tagihan sudah dibayar, tidak bisa dihapus' : 'Hapus tagihan'}"
+            ${isPaid ? 'disabled' : ''}
+          >
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+  
+  container.innerHTML = html;
+  
+  var total = result.total || 0;
+  var totalPages = result.total_pages || 1;
+  var currentPage = result.page || 1;
+  
+  riwayatSiswaPage = currentPage;
+  riwayatSiswaTotalPages = totalPages;
+  riwayatSiswaTotalData = total;
+  
+  var startData = (currentPage - 1) * result.limit + 1;
+  var endData = Math.min(currentPage * result.limit, total);
+  
+  info.textContent = 'Menampilkan ' + startData + ' - ' + endData + ' dari ' + total + ' data';
+  pageInfo.textContent = currentPage + ' / ' + totalPages;
+  prevBtn.disabled = currentPage <= 1;
+  nextBtn.disabled = currentPage >= totalPages;
+  pagination.classList.remove('hidden');
+}
+
+function renderRiwayatSiswaError(message) {
+  var container = document.getElementById('table-riwayat-setting-body');
+  container.innerHTML = `
+    <tr>
+      <td colspan="8" class="p-10 text-center text-red-500">
+        <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i>
+        <p class="text-sm">${message}</p>
+      </td>
+    </tr>
+  `;
+  document.getElementById('riwayat-setting-pagination').classList.add('hidden');
+}
+
+function goRiwayatSiswaPrev() {
+  if (riwayatSiswaPage > 1) {
+    searchRiwayatSiswa(riwayatSiswaPage - 1);
+  }
+}
+
+function goRiwayatSiswaNext() {
+  if (riwayatSiswaPage < riwayatSiswaTotalPages) {
+    searchRiwayatSiswa(riwayatSiswaPage + 1);
+  }
+}
+
+// ============================================================
+// FUNGSI LAINNYA
+// ============================================================
+
+function getStatusBadgeClass(status) {
+  var s = (status || '').toUpperCase();
+  if (s === 'LUNAS') return 'bg-emerald-100 text-emerald-700';
+  if (s === 'CICILAN' || s === 'SEBAGIAN') return 'bg-amber-100 text-amber-700';
+  return 'bg-red-100 text-red-700';
+}
+
+function showLoading(message) {
+  var modal = document.getElementById('modal-generate-progress');
+  if (modal) {
+    document.getElementById('generate-progress-subtitle').textContent = message || 'Memproses...';
+    document.getElementById('generate-progress-bar').style.width = '50%';
+    document.getElementById('generate-progress-status').textContent = 'Memproses...';
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+}
+
+function hideLoading() {
+  var modal = document.getElementById('modal-generate-progress');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+}
+
+// ============================================================
+// LOAD FILTER DATA
+// ============================================================
+
+function loadSearchFilters() {
+  google.script.run
+    .withSuccessHandler(function(posList) {
+      var selectKelasPos = document.getElementById('search-kelas-pos');
+      if (selectKelasPos) {
+        while (selectKelasPos.options.length > 1) {
+          selectKelasPos.remove(1);
+        }
+        posList.forEach(function(pos) {
+          var opt = document.createElement('option');
+          opt.value = pos.id_pos;
+          opt.text = pos.nama_pos;
+          selectKelasPos.appendChild(opt);
+        });
+      }
+      
+      var selectSiswaPos = document.getElementById('search-siswa-pos');
+      if (selectSiswaPos) {
+        while (selectSiswaPos.options.length > 1) {
+          selectSiswaPos.remove(1);
+        }
+        posList.forEach(function(pos) {
+          var opt = document.createElement('option');
+          opt.value = pos.id_pos;
+          opt.text = pos.nama_pos;
+          selectSiswaPos.appendChild(opt);
+        });
+      }
+    })
+    .withFailureHandler(function(err) {
+      console.error('Gagal load pos: ' + err.message);
+    })
+    .getPosForTagihanFilter();
+  
+  google.script.run
+    .withSuccessHandler(function(kelasList) {
+      var select = document.getElementById('search-siswa-kelas');
+      if (select) {
+        while (select.options.length > 1) {
+          select.remove(1);
+        }
+        kelasList.forEach(function(kelas) {
+          var opt = document.createElement('option');
+          opt.value = kelas;
+          opt.text = kelas;
+          select.appendChild(opt);
+        });
+      }
+    })
+    .withFailureHandler(function(err) {
+      console.error('Gagal load kelas: ' + err.message);
+    })
+    .getListKelas();
+}
+
+// ============================================================
+// SWITCH TAB
+// ============================================================
+
+function switchRiwayatSettingTab(tab) {
+  var tabKelas = document.getElementById('tab-riwayat-kelas');
+  var tabSiswa = document.getElementById('tab-riwayat-siswa');
+  var panelKelas = document.getElementById('riwayat-tab-kelas');
+  var panelSiswa = document.getElementById('riwayat-tab-siswa');
+  
   if (tab === 'kelas') {
-    tabKelas.className = activeClass;
-    tabSiswa.className = inactiveClass;
+    tabKelas.className = 'flex-1 sm:flex-none px-5 py-3.5 text-sm font-semibold border-b-2 border-emerald-600 text-emerald-700 bg-emerald-50/50 transition';
+    tabSiswa.className = 'flex-1 sm:flex-none px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition';
     panelKelas.classList.remove('hidden');
     panelSiswa.classList.add('hidden');
-    loadRiwayatSettingKelasJS(currentPageSettingKelas);
+    
+    if (window._needRefreshKelas || !window._kelasLoaded) {
+      window._kelasLoaded = true;
+      window._needRefreshKelas = false;
+      searchRiwayatKelas(1);
+    } else {
+      searchRiwayatKelas(riwayatKelasPage || 1);
+    }
   } else {
-    tabSiswa.className = activeClass;
-    tabKelas.className = inactiveClass;
+    tabSiswa.className = 'flex-1 sm:flex-none px-5 py-3.5 text-sm font-semibold border-b-2 border-emerald-600 text-emerald-700 bg-emerald-50/50 transition';
+    tabKelas.className = 'flex-1 sm:flex-none px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition';
     panelSiswa.classList.remove('hidden');
     panelKelas.classList.add('hidden');
-    if (typeof loadRiwayatSettingTagihanJS === 'function') {
-      loadRiwayatSettingTagihanJS(typeof currentPageSetting !== 'undefined' ? currentPageSetting : 1);
+    
+    if (window._needRefreshSiswa || !window._siswaLoaded) {
+      window._siswaLoaded = true;
+      window._needRefreshSiswa = false;
+      searchRiwayatSiswa(1);
+    } else {
+      searchRiwayatSiswa(riwayatSiswaPage || 1);
     }
   }
 }
 
 function refreshRiwayatSettingAktif() {
-  if (currentRiwayatTab === 'kelas') {
-    loadRiwayatSettingKelasJS(1);
-  } else if (typeof loadRiwayatSettingTagihanJS === 'function') {
-    loadRiwayatSettingTagihanJS(1);
+  var isKelasActive = !document.getElementById('riwayat-tab-kelas').classList.contains('hidden');
+  
+  if (isKelasActive) {
+    searchRiwayatKelas(riwayatKelasPage || 1);
+    Swal.fire({
+      icon: 'success',
+      title: 'Data Diperbarui!',
+      text: 'Riwayat berdasarkan kelas berhasil diperbarui.',
+      timer: 1200,
+      showConfirmButton: false
+    });
+  } else {
+    searchRiwayatSiswa(riwayatSiswaPage || 1);
+    Swal.fire({
+      icon: 'success',
+      title: 'Data Diperbarui!',
+      text: 'Riwayat berdasarkan siswa berhasil diperbarui.',
+      timer: 1200,
+      showConfirmButton: false
+    });
   }
 }
 
-// ===================== TAB 1: BERDASARKAN KELAS =====================
-function loadRiwayatSettingKelasJS(page) {
-  page = page || 1;
-  if (page < 1) page = 1;
-  currentPageSettingKelas = page;
+function refreshAllRiwayatTagihan() {
+  Swal.fire({
+    title: 'Memperbarui Data...',
+    text: 'Sedang memperbarui riwayat tagihan.',
+    allowOutsideClick: false,
+    didOpen: function() {
+      Swal.showLoading();
+    }
+  });
+  
+  searchRiwayatKelas(riwayatKelasPage || 1);
+  searchRiwayatSiswa(riwayatSiswaPage || 1);
+  
+  setTimeout(function() {
+    Swal.close();
+    Swal.fire({
+      icon: 'success',
+      title: 'Data Diperbarui!',
+      text: 'Semua riwayat tagihan berhasil diperbarui.',
+      timer: 1500,
+      showConfirmButton: false
+    });
+  }, 1500);
+}
 
-  var tbody = document.getElementById('table-riwayat-kelas-body');
-  if (!tbody) {
-    console.warn('table-riwayat-kelas-body tidak ditemukan');
+// ============================================================
+// EXPORT FUNCTIONS - DOWNLOAD EXCEL LANGSUNG
+// ============================================================
+
+function exportRiwayatKelas() {
+  var keyword = document.getElementById('search-kelas-keyword').value;
+  var filterPos = document.getElementById('search-kelas-pos').value;
+  
+  Swal.fire({
+    title: 'Mempersiapkan Export...',
+    text: 'Sedang membuat file Excel...',
+    icon: 'info',
+    allowOutsideClick: false,
+    didOpen: function() {
+      Swal.showLoading();
+    }
+  });
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      Swal.close();
+      if (result.success) {
+        window.open(result.downloadUrl, '_blank');
+        Swal.fire({
+          icon: 'success',
+          title: 'Export Berhasil!',
+          html: '<p>' + result.message + '</p><p style="font-size:12px;color:#64748b;margin-top:10px;">File: <strong>' + result.fileName + '</strong></p><p style="font-size:12px;color:#64748b;">Total Data: ' + result.totalData + ' data</p>',
+          confirmButtonColor: '#10b981'
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Export',
+          text: result.message,
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    })
+    .withFailureHandler(function(err) {
+      Swal.close();
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Terjadi kesalahan: ' + err.message,
+        confirmButtonColor: '#dc2626'
+      });
+    })
+    .exportTagihanSearchResult(keyword, filterPos, 'ALL', 'ALL', 'kelas');
+}
+
+function exportRiwayatSiswa() {
+  var keyword = document.getElementById('search-siswa-keyword').value;
+  var filterKelas = document.getElementById('search-siswa-kelas').value;
+  var filterPos = document.getElementById('search-siswa-pos').value;
+  var filterStatus = document.getElementById('search-siswa-status').value;
+  
+  Swal.fire({
+    title: 'Mempersiapkan Export...',
+    text: 'Sedang membuat file Excel...',
+    icon: 'info',
+    allowOutsideClick: false,
+    didOpen: function() {
+      Swal.showLoading();
+    }
+  });
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      Swal.close();
+      if (result.success) {
+        window.open(result.downloadUrl, '_blank');
+        Swal.fire({
+          icon: 'success',
+          title: 'Export Berhasil!',
+          html: '<p>' + result.message + '</p><p style="font-size:12px;color:#64748b;margin-top:10px;">File: <strong>' + result.fileName + '</strong></p><p style="font-size:12px;color:#64748b;">Total Data: ' + result.totalData + ' data</p>',
+          confirmButtonColor: '#10b981'
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Export',
+          text: result.message,
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    })
+    .withFailureHandler(function(err) {
+      Swal.close();
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Terjadi kesalahan: ' + err.message,
+        confirmButtonColor: '#dc2626'
+      });
+    })
+    .exportTagihanSearchResult(keyword, filterPos, filterKelas, filterStatus, 'siswa');
+}
+
+function exportLaporanTunggakanJS() {
+  var filterPos = document.getElementById('laporan-filter-pos').value;
+  
+  Swal.fire({
+    title: 'Mempersiapkan Export...',
+    text: 'Sedang membuat file Excel...',
+    icon: 'info',
+    allowOutsideClick: false,
+    didOpen: function() {
+      Swal.showLoading();
+    }
+  });
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      Swal.close();
+      if (result.success) {
+        window.open(result.downloadUrl, '_blank');
+        Swal.fire({
+          icon: 'success',
+          title: 'Export Berhasil!',
+          html: '<p>' + result.message + '</p><p style="font-size:12px;color:#64748b;margin-top:10px;">File: <strong>' + result.fileName + '</strong></p>',
+          confirmButtonColor: '#10b981'
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Export',
+          text: result.message,
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    })
+    .withFailureHandler(function(err) {
+      Swal.close();
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Terjadi kesalahan: ' + err.message,
+        confirmButtonColor: '#dc2626'
+      });
+    })
+    .exportLaporanTunggakanToExcel(filterPos);
+}
+
+// ============================================================
+// FUNGSI HAPUS DENGAN SWEETALERT2
+// ============================================================
+
+function hapusSettingKelas(kelas, pos, periode, tanggalBatch) {
+  // Cek terlebih dahulu apakah ada tagihan yang sudah dibayar
+  showLoading('Memeriksa data tagihan...');
+  
+  // Panggil fungsi backend untuk cek terlebih dahulu
+  google.script.run
+    .withSuccessHandler(function(result) {
+      hideLoading();
+      
+      // Jika ada yang sudah dibayar, tampilkan peringatan
+      if (result.skipped && result.skipped > 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Tidak Dapat Dihapus!',
+          html: `
+            <div style="text-align: left; padding: 10px 0;">
+              <p style="color: #dc2626; font-weight: bold;">⚠️ Setting tagihan ini tidak dapat dihapus!</p>
+              <p>Terdapat <strong>${result.skipped}</strong> tagihan yang sudah memiliki pembayaran (LUNAS/CICILAN).</p>
+              <p style="font-size: 12px; color: #64748b; margin-top: 10px;">
+                Tagihan yang sudah dibayar tidak dapat dihapus untuk menjaga integritas data keuangan.
+              </p>
+              <hr style="margin: 10px 0; border-color: #e2e8f0;">
+              <p style="font-size: 12px; color: #64748b;">
+                Total tagihan dalam group ini: <strong>${result.totalMatched || 0}</strong>
+              </p>
+            </div>
+          `,
+          confirmButtonColor: '#dc2626',
+          confirmButtonText: 'OK'
+        });
+        return;
+      }
+      
+      // Jika tidak ada yang dibayar, lanjutkan konfirmasi hapus
+      Swal.fire({
+        title: 'Hapus Tagihan?',
+        html: `
+          <div style="text-align: left; padding: 10px 0;">
+            <p>Anda akan menghapus <strong>SEMUA</strong> tagihan dengan:</p>
+            <p><strong>Kelas:</strong> ${kelas}</p>
+            <p><strong>Pos:</strong> ${pos}</p>
+            <p><strong>Periode:</strong> ${periode}</p>
+            <p><strong>Tanggal:</strong> ${tanggalBatch || '-'}</p>
+            <p style="color: #10b981; font-weight: bold; margin-top: 10px;">
+              ✅ ${result.deleted || 0} tagihan akan dihapus (semua belum dibayar)
+            </p>
+          </div>
+          <p style="color: #dc2626; font-weight: bold; margin-top: 10px;">⚠️ Tindakan ini tidak dapat dibatalkan!</p>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+      }).then(function(result) {
+        if (result.isConfirmed) {
+          // Jalankan hapus sebenarnya
+          showLoading('Menghapus data...');
+          
+          google.script.run
+            .withSuccessHandler(function(result) {
+              hideLoading();
+              if (result.success) {
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Berhasil!',
+                  text: 'Berhasil menghapus ' + result.deleted + ' tagihan.',
+                  confirmButtonColor: '#10b981'
+                });
+                searchRiwayatKelas(riwayatKelasPage);
+              } else {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Gagal Hapus',
+                  text: result.message,
+                  confirmButtonColor: '#dc2626'
+                });
+              }
+            })
+            .withFailureHandler(function(err) {
+              hideLoading();
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Terjadi kesalahan: ' + err.message,
+                confirmButtonColor: '#dc2626'
+              });
+            })
+            .hapusSettingKelas(kelas, pos, periode, tanggalBatch);
+        }
+      });
+    })
+    .withFailureHandler(function(err) {
+      hideLoading();
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Terjadi kesalahan: ' + err.message,
+        confirmButtonColor: '#dc2626'
+      });
+    })
+    .hapusSettingKelas(kelas, pos, periode, tanggalBatch);
+}
+
+function hapusTagihanSiswa(idTagihan) {
+  Swal.fire({
+    title: 'Hapus Tagihan?',
+    html: '<p>Anda akan menghapus tagihan dengan ID:</p><p><strong>' + idTagihan + '</strong></p><p style="color:#dc2626;font-weight:bold;margin-top:10px;">⚠️ Tindakan ini tidak dapat dibatalkan!</p>',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc2626',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: 'Ya, Hapus!',
+    cancelButtonText: 'Batal'
+  }).then(function(result) {
+    if (result.isConfirmed) {
+      showLoading('Menghapus tagihan...');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          hideLoading();
+          if (result.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Berhasil!',
+              text: 'Berhasil menghapus tagihan.',
+              confirmButtonColor: '#10b981'
+            });
+            searchRiwayatSiswa(riwayatSiswaPage);
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Gagal Hapus',
+              text: result.message,
+              confirmButtonColor: '#dc2626'
+            });
+          }
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Terjadi kesalahan: ' + err.message,
+            confirmButtonColor: '#dc2626'
+          });
+        })
+        .hapusTagihanSiswa(idTagihan);
+    }
+  });
+}
+
+// ============================================================
+// FUNGSI DETAIL - PINDAH KE TAB SISWA
+// ============================================================
+
+function showDetailByKelas(kelas, pos, periode, tanggalBatch, idPos) {
+  var selectKelas = document.getElementById('search-siswa-kelas');
+  var selectPos = document.getElementById('search-siswa-pos');
+  var inputKeyword = document.getElementById('search-siswa-keyword');
+  var selectStatus = document.getElementById('search-siswa-status');
+  
+  if (selectKelas) {
+    for (var i = 0; i < selectKelas.options.length; i++) {
+      if (selectKelas.options[i].value === kelas) {
+        selectKelas.value = kelas;
+        break;
+      }
+    }
+  }
+  
+  if (selectPos && idPos) {
+    var found = false;
+    for (var i = 0; i < selectPos.options.length; i++) {
+      if (selectPos.options[i].value === idPos) {
+        selectPos.value = idPos;
+        found = true;
+        break;
+      }
+    }
+    if (!found && pos) {
+      for (var i = 0; i < selectPos.options.length; i++) {
+        var optionText = selectPos.options[i].text.toLowerCase();
+        var posLower = pos.toLowerCase();
+        if (optionText.indexOf(posLower) !== -1 || posLower.indexOf(optionText) !== -1) {
+          selectPos.value = selectPos.options[i].value;
+          found = true;
+          break;
+        }
+      }
+    }
+    if (!found) {
+      selectPos.value = 'ALL';
+    }
+  }
+  
+  if (inputKeyword) {
+    inputKeyword.value = '';
+  }
+  if (selectStatus) {
+    selectStatus.value = 'ALL';
+  }
+  
+  Swal.fire({
+    title: 'Memuat Detail Siswa',
+    text: 'Mengambil data siswa untuk kelas ' + kelas + '...',
+    icon: 'info',
+    allowOutsideClick: false,
+    didOpen: function() {
+      Swal.showLoading();
+    }
+  });
+  
+  switchRiwayatSettingTab('siswa');
+  riwayatSiswaPage = 1;
+  
+  var container = document.getElementById('table-riwayat-setting-body');
+  container.innerHTML = `
+    <tr>
+      <td colspan="8" class="p-10 text-center text-slate-400">
+        <i class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"></i>
+        <p class="text-sm">Memuat data siswa untuk kelas ${kelas}...</p>
+      </td>
+    </tr>
+  `;
+  
+  var keyword = document.getElementById('search-siswa-keyword').value;
+  var filterKelas = document.getElementById('search-siswa-kelas').value;
+  var filterPos = document.getElementById('search-siswa-pos').value;
+  var filterStatus = document.getElementById('search-siswa-status').value;
+  
+  window._siswaLoaded = true;
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      Swal.close();
+      if (result.success) {
+        riwayatSiswaTotalPages = result.total_pages || 1;
+        riwayatSiswaTotalData = result.total || 0;
+        renderRiwayatSiswa(result);
+        
+        if (result.data && result.data.length > 0) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Data Ditemukan!',
+            text: 'Menampilkan ' + result.data.length + ' data siswa.',
+            timer: 1500,
+            showConfirmButton: false
+          });
+        } else {
+          Swal.fire({
+            icon: 'info',
+            title: 'Tidak Ada Data',
+            text: 'Tidak ada tagihan siswa yang ditemukan untuk kelas ' + kelas,
+            confirmButtonColor: '#64748b'
+          });
+        }
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Memuat Data',
+          text: result.message || 'Terjadi kesalahan saat memuat data.',
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    })
+    .withFailureHandler(function(err) {
+      Swal.close();
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Terjadi kesalahan: ' + err.message,
+        confirmButtonColor: '#dc2626'
+      });
+    })
+    .cariSettingTagihanBySiswa(keyword, filterPos, filterKelas, filterStatus, riwayatSiswaPage, 10);
+}
+
+// ============================================================
+// INISIALISASI
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadSearchFilters();
+  
+  riwayatKelasPage = 1;
+  riwayatSiswaPage = 1;
+  window._kelasLoaded = false;
+  window._siswaLoaded = false;
+  
+  setTimeout(function() {
+    searchRiwayatKelas(1);
+  }, 500);
+});
+
+// ============================================================
+// SETTING TAGIHAN - FILTER SISWA BERDASARKAN JENIS KELAMIN
+// ============================================================
+
+// Variabel untuk menyimpan data siswa asli
+var allSiswaData = [];
+var filteredSiswaData = [];
+
+/**
+ * Fungsi untuk memfilter siswa berdasarkan jenis kelamin
+ */
+function filterSiswaByJenisKelaminJS() {
+  var filterValue = document.getElementById('setting-filter-jk').value;
+  var container = document.getElementById('setting-siswa-container');
+  
+  // Jika belum ada data siswa, tampilkan pesan
+  if (!allSiswaData || allSiswaData.length === 0) {
+    container.innerHTML = `
+      <div class="flex flex-col items-center justify-center h-64 text-slate-400">
+        <i class="fa-solid fa-users text-4xl mb-3"></i>
+        <p class="text-sm">Pilih kelas terlebih dahulu</p>
+      </div>
+    `;
     return;
   }
-
-  tbody.innerHTML = 
-    '<tr>' +
-      '<td colspan="8" class="p-10 text-center text-slate-400">' +
-        '<i class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"></i>' +
-        '<p class="text-sm">Memuat riwayat...</p>' +
-      '</td>' +
-    '</tr>';
-
-  var pagination = document.getElementById('riwayat-kelas-pagination');
-  if (pagination) pagination.classList.add('hidden');
-
-  google.script.run
-    .withSuccessHandler(function (result) {
-      renderRiwayatSettingKelas(result);
-    })
-    .withFailureHandler(function (err) {
-      tbody.innerHTML = 
-        '<tr>' +
-          '<td colspan="8" class="p-10 text-center text-red-500">' +
-            '<i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i>' +
-            '<p class="text-sm">' + (err.message || 'Gagal memuat data') + '</p>' +
-          '</td>' +
-        '</tr>';
-    })
-    .getRiwayatSettingKelas(page, RIWAYAT_PER_PAGE);
-}
-
-function renderRiwayatSettingKelas(result) {
-  var tbody = document.getElementById('table-riwayat-kelas-body');
-  var pagination = document.getElementById('riwayat-kelas-pagination');
-  var info = document.getElementById('riwayat-kelas-info');
-  var pageInfo = document.getElementById('riwayat-kelas-page-info');
-  var btnPrev = document.getElementById('btn-riwayat-kelas-prev');
-  var btnNext = document.getElementById('btn-riwayat-kelas-next');
-
-  if (!tbody) return;
-
-  if (!result || !result.data || result.data.length === 0) {
-  var pesan = 'Belum ada riwayat setting tagihan';
-  if (result && result.error) {
-    pesan = result.error;
+  
+  // Filter data berdasarkan jenis kelamin
+  if (filterValue === 'ALL') {
+    filteredSiswaData = allSiswaData.slice();
+  } else {
+    filteredSiswaData = allSiswaData.filter(function(siswa) {
+      var jk = normalizeJenisKelamin(siswa.jenis_kelamin);
+      return jk === filterValue;
+    });
   }
-
-  tbody.innerHTML = 
-    '<tr>' +
-      '<td colspan="8" class="p-10 text-center text-slate-400">' +
-        '<i class="fa-solid fa-inbox text-3xl mb-2"></i>' +
-        '<p class="text-sm">' + pesan + '</p>' +
-      '</td>' +
-    '</tr>';
-  if (pagination) pagination.classList.add('hidden');
-  return;
-}
-
-  var html = '';
-  result.data.forEach(function (row) {
-    var statusBadge = (typeof getStatusBadge === 'function') 
-      ? getStatusBadge(row.status) 
-      : _getStatusBadgeFallback(row.status);
-
-    var totalFormatted = (typeof formatRupiah === 'function') 
-      ? formatRupiah(row.totalTagihan) 
-      : _formatRupiahFallback(row.totalTagihan);
-
-    var nominalFormatted = (typeof formatRupiah === 'function') 
-      ? formatRupiah(row.nominal) 
-      : _formatRupiahFallback(row.nominal);
-
-    html += 
-      '<tr class="hover:bg-slate-50 transition">' +
-        '<td class="p-4 whitespace-nowrap text-slate-600">' + (row.tanggal || '-') + '</td>' +
-        '<td class="p-4 font-medium text-slate-800">' + (row.kelas || '-') + '</td>' +
-        '<td class="p-4">' +
-          '<div class="font-medium text-slate-800">' + (row.pos || '-') + '</div>' +
-          '<div class="text-xs text-slate-500">' + (row.periode || '-') + '</div>' +
-        '</td>' +
-        '<td class="p-4 text-center">' +
-          '<span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">' +
-            (row.jumlahSiswa || 0) +
-          '</span>' +
-        '</td>' +
-        '<td class="p-4 text-right font-semibold text-slate-700">' + nominalFormatted + '</td>' +
-        '<td class="p-4 text-right font-bold text-emerald-700">' + totalFormatted + '</td>' +
-        '<td class="p-4 text-center">' + statusBadge + '</td>' +
-        '<td class="p-4 text-center">' +
-  '<div class="flex items-center justify-center gap-1.5">' +
-    '<button ' +
-      'onclick="lihatDetailSettingKelas(\'' + encodeURIComponent(row.kelas || '') + '\', \'' + encodeURIComponent(row.pos || '') + '\', \'' + encodeURIComponent(row.periode || '') + '\', \'' + (row.tanggalBatch || '') + '\')" ' +
-      'class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition" ' +
-      'title="Lihat detail siswa">' +
-      '<i class="fa-solid fa-eye"></i>' +
-    '</button>' +
-    '<button ' +
-      'onclick="hapusSettingKelasJS(\'' + encodeURIComponent(row.kelas || '') + '\', \'' + encodeURIComponent(row.pos || '') + '\', \'' + encodeURIComponent(row.periode || '') + '\', \'' + (row.tanggalBatch || '') + '\', ' + (row.jumlahSiswa || 0) + ')" ' +
-      'class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition" ' +
-      'title="Hapus semua tagihan group ini">' +
-      '<i class="fa-solid fa-trash"></i>' +
-    '</button>' +
-  '</div>' +
-'</td>' +
-      '</tr>';
-  });
-
-  tbody.innerHTML = html;
-
-  // Pagination
-  var totalPages = Math.ceil(result.total / RIWAYAT_PER_PAGE) || 1;
-  if (info) info.textContent = 'Menampilkan ' + result.data.length + ' dari ' + result.total + ' data';
-  if (pageInfo) pageInfo.textContent = result.page + ' / ' + totalPages;
-  if (btnPrev) btnPrev.disabled = result.page <= 1;
-  if (btnNext) btnNext.disabled = result.page >= totalPages;
-  if (pagination) pagination.classList.remove('hidden');
-}
-
-function lihatDetailSettingKelas(kelas, pos, periode, tanggalBatch) {
-  switchRiwayatSettingTab('siswa');
-  console.log('Detail Setting:', {
-    kelas: decodeURIComponent(kelas || ''),
-    pos: decodeURIComponent(pos || ''),
-    periode: decodeURIComponent(periode || ''),
-    tanggalBatch: tanggalBatch
-  });
-}
-
-// ===================== FALLBACK HELPER (hanya dipakai kalau belum ada) =====================
-function _getStatusBadgeFallback(status) {
-  var s = (status || '').toLowerCase();
-  if (s === 'lunas' || s === 'paid') {
-    return '<span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">Lunas</span>';
-  }
-  if (s === 'sebagian' || s === 'partial') {
-    return '<span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">Sebagian</span>';
-  }
-  return '<span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">Belum Lunas</span>';
-}
-
-function _formatRupiahFallback(angka) {
-  if (angka === null || angka === undefined || isNaN(angka)) return 'Rp 0';
-  return 'Rp ' + Number(angka).toLocaleString('id-ID');
+  
+  // Render ulang daftar siswa dengan data yang sudah difilter
+  renderSiswaList(filteredSiswaData);
+  
+  // Update counter
+  updateSiswaCount();
 }
 
 /**
- * Riwayat Setting Tagihan dikelompokkan per Kelas + Pos + Periode
- * (join ke sheet Siswa untuk mendapatkan Kelas)
+ * Normalisasi jenis kelamin
+ * @param {string} value - Nilai jenis kelamin dari database
+ * @returns {string} - 'LAKI-LAKI' atau 'PEREMPUAN'
  */
-`Legacy server implementation moved to code.gs.
-function getRiwayatSettingKelas(page, perPage) {
-  page = page || 1;
-  perPage = perPage || 10;
+function normalizeJenisKelamin(value) {
+  if (!value) return 'LAKI-LAKI'; // Default jika kosong
+  
+  var text = String(value).toUpperCase().trim();
+  
+  // Cek apakah laki-laki
+  if (text === 'LAKI-LAKI' || text === 'LAKI LAKI' || text === 'L' || text === 'Laki-laki' || text === 'laki-laki') {
+    return 'LAKI-LAKI';
+  }
+  
+  // Cek apakah perempuan
+  if (text === 'PEREMPUAN' || text === 'P' || text === 'Perempuan' || text === 'perempuan') {
+    return 'PEREMPUAN';
+  }
+  
+  // Default jika tidak terdeteksi
+  return 'LAKI-LAKI';
+}
 
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+/**
+ * Render daftar siswa
+ * @param {array} siswaList - Daftar siswa yang akan ditampilkan
+ */
+function renderSiswaList(siswaList) {
+  var container = document.getElementById('setting-siswa-container');
+  
+  if (!siswaList || siswaList.length === 0) {
+    container.innerHTML = `
+      <div class="flex flex-col items-center justify-center h-64 text-slate-400">
+        <i class="fa-solid fa-user-slash text-4xl mb-3"></i>
+        <p class="text-sm">Tidak ada siswa yang sesuai dengan filter</p>
+      </div>
+    `;
+    return;
+  }
+  
+  var html = `
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto pr-2">
+  `;
+  
+  siswaList.forEach(function(siswa) {
+    // Tentukan icon berdasarkan jenis kelamin
+    var jk = normalizeJenisKelamin(siswa.jenis_kelamin);
+    var iconClass = jk === 'LAKI-LAKI' ? 'fa-mars text-blue-500' : 'fa-venus text-pink-500';
+    var labelJk = jk === 'LAKI-LAKI' ? 'L' : 'P';
+    
+    // Cek apakah siswa sudah dipilih (untuk mempertahankan state checkbox)
+    var isChecked = siswa.checked ? 'checked' : '';
+    
+    html += `
+      <label class="flex items-start gap-2 p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
+        <input
+          type="checkbox"
+          class="siswa-checkbox mt-0.5 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+          value="${siswa.id_siswa}"
+          data-nama="${siswa.nama_lengkap}"
+          data-kelas="${siswa.kelas}"
+          data-jk="${siswa.jenis_kelamin}"
+          onchange="updateSiswaCount()"
+          ${isChecked}
+        />
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium text-slate-700 truncate">
+            ${siswa.nama_lengkap}
+          </div>
+          <div class="flex items-center gap-2 text-xs text-slate-500">
+            <span>${siswa.nisn || '-'}</span>
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-100">
+              <i class="fa-solid ${iconClass} text-xs"></i>
+              ${labelJk}
+            </span>
+          </div>
+        </div>
+      </label>
+    `;
+  });
+  
+  html += '</div>';
+  container.innerHTML = html;
+}
 
-    // ===== 1. Sheet Tagihan =====
-    let sheetTagihan =ss.getSheetByName('Tagihan_Siswa')  
-                    || ss.getSheetByName('Tagihan') 
-                    || ss.getSheetByName('tagihan') 
-                    || ss.getSheetByName('TAGIHAN');
-
-    if (!sheetTagihan) {
-      const sheets = ss.getSheets();
-      for (let i = 0; i < sheets.length; i++) {
-        if (sheets[i].getName().toLowerCase().indexOf('tagihan') !== -1) {
-          sheetTagihan = sheets[i];
-          break;
-        }
-      }
+/**
+ * Update jumlah siswa yang dipilih
+ */
+function updateSiswaCount() {
+  var checkboxes = document.querySelectorAll('.siswa-checkbox:checked');
+  var count = checkboxes.length;
+  var total = document.querySelectorAll('.siswa-checkbox').length;
+  
+  var countElement = document.getElementById('setting-siswa-count');
+  if (countElement) {
+    countElement.textContent = count + ' dipilih';
+  }
+  
+  // Enable/disable button generate
+  var btnGenerate = document.getElementById('btn-generate-tagihan');
+  if (btnGenerate) {
+    btnGenerate.disabled = count === 0;
+  }
+  
+  // Update check-all state
+  var checkAll = document.getElementById('setting-check-all');
+  if (checkAll) {
+    if (count === 0) {
+      checkAll.checked = false;
+      checkAll.indeterminate = false;
+    } else if (count === total && total > 0) {
+      checkAll.checked = true;
+      checkAll.indeterminate = false;
+    } else {
+      checkAll.checked = false;
+      checkAll.indeterminate = true;
     }
+  }
+}
 
-    if (!sheetTagihan) {
-      return { data: [], total: 0, page: 1, error: 'Sheet Tagihan tidak ditemukan' };
-    }
+/**
+ * Toggle check all siswa
+ */
+function toggleCheckAllSiswaJS() {
+  var checkAll = document.getElementById('setting-check-all');
+  var checkboxes = document.querySelectorAll('.siswa-checkbox');
+  
+  checkboxes.forEach(function(checkbox) {
+    checkbox.checked = checkAll.checked;
+  });
+  
+  updateSiswaCount();
+}
 
-    const dataTagihan = sheetTagihan.getDataRange().getValues();
-    if (dataTagihan.length <= 1) {
-      return { data: [], total: 0, page: 1, error: 'Sheet Tagihan kosong' };
-    }
-
-    const headersT = dataTagihan[0].map(function(h) {
-      return String(h || '').toLowerCase().trim();
-    });
-
-    function findCol(headers, names) {
-      for (let i = 0; i < names.length; i++) {
-        const idx = headers.indexOf(names[i]);
-        if (idx !== -1) return idx;
-      }
-      for (let i = 0; i < headers.length; i++) {
-        for (let j = 0; j < names.length; j++) {
-          if (headers[i].indexOf(names[j]) !== -1) return i;
-        }
-      }
-      return -1;
-    }
-
-    const col = {
-      idSiswa   : findCol(headersT, ['id_siswa', 'idsiswa', 'id siswa']),
-      idPos     : findCol(headersT, ['id_pos', 'idpos', 'id pos']),
-      periode   : findCol(headersT, ['periode']),
-      namaItem  : findCol(headersT, ['nama_item_snapshot', 'nama item', 'nama_item', 'nama pos']),
-      nominal   : findCol(headersT, ['nominal_akhir', 'nominal_asal', 'nominal']),
-      tanggal   : findCol(headersT, ['tanggal_tagihan', 'tanggal', 'tgl']),
-      status    : findCol(headersT, ['status', 'status_siswa'])
-    };
-
-    if (col.idSiswa === -1) {
-      return { 
-        data: [], total: 0, page: 1, 
-        error: 'Kolom id_siswa tidak ditemukan. Header: [' + headersT.join(' | ') + ']' 
-      };
-    }
-
-    // ===== 2. Sheet Siswa → map id_siswa → kelas =====
-    let sheetSiswa = ss.getSheetByName('Siswa') 
-                  || ss.getSheetByName('siswa') 
-                  || ss.getSheetByName('SISWA')
-                  || ss.getSheetByName('Data Siswa');
-
-    if (!sheetSiswa) {
-      const sheets = ss.getSheets();
-      for (let i = 0; i < sheets.length; i++) {
-        const n = sheets[i].getName().toLowerCase();
-        if (n.indexOf('siswa') !== -1 && n.indexOf('tagihan') === -1) {
-          sheetSiswa = sheets[i];
-          break;
-        }
-      }
-    }
-
-    const mapSiswaKelas = {}; // id_siswa → kelas
-
-    if (sheetSiswa) {
-      const dataSiswa = sheetSiswa.getDataRange().getValues();
-      if (dataSiswa.length > 1) {
-        const headersS = dataSiswa[0].map(function(h) {
-          return String(h || '').toLowerCase().trim();
-        });
-
-        const colSiswaId   = findCol(headersS, ['id_siswa', 'id', 'idsiswa', 'nis', 'nisn']);
-        const colSiswaKelas = findCol(headersS, ['kelas', 'nama_kelas', 'class', 'kelas_saat_ini']);
-
-        if (colSiswaId !== -1 && colSiswaKelas !== -1) {
-          for (let i = 1; i < dataSiswa.length; i++) {
-            const id = String(dataSiswa[i][colSiswaId] || '').trim();
-            const kelas = String(dataSiswa[i][colSiswaKelas] || '').trim();
-            if (id) mapSiswaKelas[id] = kelas || '-';
-          }
-        }
-      }
-    }
-
-    // ===== 3. (Opsional) Sheet Pos → map id_pos → nama =====
-    const mapPosNama = {};
-    let sheetPos = ss.getSheetByName('Pos') 
-                || ss.getSheetByName('pos') 
-                || ss.getSheetByName('Pos Pembayaran')
-                || ss.getSheetByName('pos_pembayaran');
-
-    if (sheetPos) {
-      const dataPos = sheetPos.getDataRange().getValues();
-      if (dataPos.length > 1) {
-        const headersP = dataPos[0].map(function(h) {
-          return String(h || '').toLowerCase().trim();
-        });
-        const colPosId   = findCol(headersP, ['id_pos', 'id', 'idpos']);
-        const colPosNama = findCol(headersP, ['nama', 'nama_pos', 'nama pos', 'pos']);
-
-        if (colPosId !== -1 && colPosNama !== -1) {
-          for (let i = 1; i < dataPos.length; i++) {
-            const id = String(dataPos[i][colPosId] || '').trim();
-            const nama = String(dataPos[i][colPosNama] || '').trim();
-            if (id) mapPosNama[id] = nama || id;
-          }
-        }
-      }
-    }
-
-    // ===== 4. Agregasi =====
-    const groupMap = {};
-
-    for (let i = 1; i < dataTagihan.length; i++) {
-      const row = dataTagihan[i];
-
-      const idSiswa = String(row[col.idSiswa] || '').trim();
-      if (!idSiswa) continue;
-
-      // Ambil kelas dari map Siswa
-      const kelas = mapSiswaKelas[idSiswa] || 'Tidak diketahui';
-
-      // Nama Pos: prioritaskan nama_item_snapshot, fallback ke mapPos
-      let posNama = '-';
-      if (col.namaItem !== -1 && row[col.namaItem]) {
-        posNama = String(row[col.namaItem]).trim();
-      } else if (col.idPos !== -1) {
-        const idPos = String(row[col.idPos] || '').trim();
-        posNama = mapPosNama[idPos] || idPos || '-';
-      }
-
-      const periode = col.periode !== -1 ? String(row[col.periode] || '').trim() : '-';
-
-      // Tanggal
-      let tanggalStr = '-';
-      let tanggalBatch = '';
-      if (col.tanggal !== -1 && row[col.tanggal]) {
-        const t = row[col.tanggal];
-        if (Object.prototype.toString.call(t) === '[object Date]' && !isNaN(t.getTime())) {
-          tanggalStr = Utilities.formatDate(t, Session.getScriptTimeZone(), 'dd/MM/yyyy');
-          tanggalBatch = Utilities.formatDate(t, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-        } else {
-          tanggalStr = String(t);
-          tanggalBatch = tanggalStr;
-        }
-      }
-
-      // Key grouping
-      const key = kelas + '|' + posNama + '|' + periode + '|' + tanggalBatch;
-
-      if (!groupMap[key]) {
-        groupMap[key] = {
-          tanggal: tanggalStr,
-          tanggalBatch: tanggalBatch,
-          kelas: kelas,
-          pos: posNama,
-          periode: periode,
-          jumlahSiswa: 0,
-          nominal: 0,
-          totalTagihan: 0,
-          statusCount: { lunas: 0, sebagian: 0, belum: 0 },
-          status: 'Belum Lunas'
+/**
+ * Load siswa berdasarkan kelas
+ */
+function loadSiswaByKelasJS() {
+  var kelas = document.getElementById('setting-kelas').value;
+  var container = document.getElementById('setting-siswa-container');
+  
+  // Reset checkbox "Pilih Semua" setiap kali load kelas baru
+  var checkAll = document.getElementById('setting-check-all');
+  if (checkAll) {
+    checkAll.checked = false;
+    checkAll.indeterminate = false;
+  }
+  
+  if (!kelas) {
+    container.innerHTML = `
+      <div class="flex flex-col items-center justify-center h-64 text-slate-400">
+        <i class="fa-solid fa-users text-4xl mb-3"></i>
+        <p class="text-sm">Pilih kelas terlebih dahulu</p>
+      </div>
+    `;
+    allSiswaData = [];
+    filteredSiswaData = [];
+    document.getElementById('setting-siswa-count').textContent = '0 dipilih';
+    
+    // Disable generate button
+    var btnGenerate = document.getElementById('btn-generate-tagihan');
+    if (btnGenerate) btnGenerate.disabled = true;
+    return;
+  }
+  
+  // Tampilkan loading
+  container.innerHTML = `
+    <div class="flex flex-col items-center justify-center h-64 text-slate-400">
+      <i class="fa-solid fa-circle-notch animate-spin text-3xl mb-3 text-emerald-600"></i>
+      <p class="text-sm">Memuat data siswa...</p>
+    </div>
+  `;
+  
+  google.script.run
+    .withSuccessHandler(function(siswaList) {
+      // Simpan data asli
+      allSiswaData = siswaList.map(function(s) {
+        return {
+          id_siswa: s.id_siswa || '',
+          nisn: s.nisn || '',
+          nis: s.nis || '',
+          nama_lengkap: s.nama_lengkap || '',
+          jenis_kelamin: s.jenis_kelamin || '',
+          kelas: s.kelas || '',
+          tahun_pelajaran: s.tahun_pelajaran || '',
+          id_potongan_default: s.id_potongan_default || '',
+          checked: false
         };
+      });
+      
+      // Reset filter ke ALL
+      var filterSelect = document.getElementById('setting-filter-jk');
+      if (filterSelect) filterSelect.value = 'ALL';
+      
+      // Terapkan filter (ALL)
+      filteredSiswaData = allSiswaData.slice();
+      renderSiswaList(filteredSiswaData);
+      updateSiswaCount();
+      
+      // Reset checkbox "Pilih Semua"
+      var checkAll = document.getElementById('setting-check-all');
+      if (checkAll) {
+        checkAll.checked = false;
+        checkAll.indeterminate = false;
       }
+    })
+    .withFailureHandler(function(err) {
+      container.innerHTML = `
+        <div class="flex flex-col items-center justify-center h-64 text-red-500">
+          <i class="fa-solid fa-triangle-exclamation text-4xl mb-3"></i>
+          <p class="text-sm">Gagal memuat data: ${err.message}</p>
+        </div>
+      `;
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal Memuat Data',
+        text: 'Gagal memuat data siswa: ' + err.message,
+        confirmButtonColor: '#dc2626'
+      });
+    })
+    .getSiswaByKelas(kelas);
+}
 
-      const g = groupMap[key];
-      g.jumlahSiswa += 1;
-
-      const nominal = col.nominal !== -1 ? (Number(row[col.nominal]) || 0) : 0;
-      if (g.nominal === 0 && nominal > 0) g.nominal = nominal;
-      g.totalTagihan += nominal;
-
-      // Status
-      if (col.status !== -1) {
-        const st = String(row[col.status] || '').toLowerCase();
-        if (st.indexOf('lunas') !== -1 || st === 'paid') {
-          g.statusCount.lunas += 1;
-        } else if (st.indexOf('sebagian') !== -1 || st === 'partial' || st.indexOf('cicil') !== -1) {
-          g.statusCount.sebagian += 1;
-        } else {
-          g.statusCount.belum += 1;
-        }
-      } else {
-        g.statusCount.belum += 1;
-      }
-    }
-
-    // Status final
-    const list = [];
-    for (const key in groupMap) {
-      const g = groupMap[key];
-      if (g.jumlahSiswa > 0 && g.statusCount.lunas === g.jumlahSiswa) {
-        g.status = 'Lunas';
-      } else if (g.statusCount.lunas > 0 || g.statusCount.sebagian > 0) {
-        g.status = 'Sebagian';
-      } else {
-        g.status = 'Belum Lunas';
-      }
-      list.push(g);
-    }
-
-    // Urutkan terbaru
-    list.sort(function(a, b) {
-      if (a.tanggalBatch && b.tanggalBatch) {
-        return b.tanggalBatch.localeCompare(a.tanggalBatch);
-      }
-      return 0;
+/**
+ * Generate tagihan massal
+ */
+function generateTagihanMassalJS() {
+  var kelas = document.getElementById('setting-kelas').value;
+  var idPos = document.getElementById('setting-pos').value;
+  var periode = document.getElementById('setting-periode').value;
+  var nominal = document.getElementById('setting-nominal').value;
+  var idPotongan = document.getElementById('setting-potongan').value;
+  var bisaDicicil = document.getElementById('setting-bisa-dicicil').checked;
+  var catatan = document.getElementById('setting-catatan').value;
+  
+  // Validasi
+  if (!kelas) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Peringatan',
+      text: 'Silakan pilih kelas terlebih dahulu.',
+      confirmButtonColor: '#f59e0b'
     });
-
-    const total = list.length;
-    const start = (page - 1) * perPage;
-    const paged = list.slice(start, start + perPage);
-
-    // Cek apakah map siswa berhasil
-    const jumlahMapSiswa = Object.keys(mapSiswaKelas).length;
-
-    return {
-      data: paged,
-      total: total,
-      page: page,
-      _debug: {
-        sheetTagihan: sheetTagihan.getName(),
-        sheetSiswa: sheetSiswa ? sheetSiswa.getName() : 'TIDAK DITEMUKAN',
-        jumlahMapSiswa: jumlahMapSiswa,
-        totalGroup: total,
-        sampleKelas: list.length > 0 ? list[0].kelas : null
-      }
-    };
-
-  } catch (err) {
-    return {
-      data: [],
-      total: 0,
-      page: 1,
-      error: err.message
-    };
+    return;
   }
-}
-`;
-
-// ===== Helper pagination (aman untuk onclick HTML) =====
-function goRiwayatSiswaPrev() {
-  var page = (typeof currentPageSetting !== 'undefined' ? currentPageSetting : 1) - 1;
-  loadRiwayatSettingTagihanJS(page);
-}
-
-function goRiwayatSiswaNext() {
-  var page = (typeof currentPageSetting !== 'undefined' ? currentPageSetting : 1) + 1;
-  loadRiwayatSettingTagihanJS(page);
-}
-
-function goRiwayatKelasPrev() {
-  var page = (typeof currentPageSettingKelas !== 'undefined' ? currentPageSettingKelas : 1) - 1;
-  loadRiwayatSettingKelasJS(page);
-}
-
-function goRiwayatKelasNext() {
-  var page = (typeof currentPageSettingKelas !== 'undefined' ? currentPageSettingKelas : 1) + 1;
-  loadRiwayatSettingKelasJS(page);
-}
-
-function showHapusProgressModal(total) {
-  var modal = document.getElementById('modal-hapus-progress');
-  if (!modal) return;
-
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
-
-  updateHapusProgress(0, total, 'Memulai penghapusan...');
-}
-
-function hideHapusProgressModal() {
-  var modal = document.getElementById('modal-hapus-progress');
-  if (!modal) return;
-  modal.classList.add('hidden');
-  modal.classList.remove('flex');
-}
-
-function updateHapusProgress(done, total, statusText) {
-  total = total || 0;
-  done = done || 0;
-  var pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
-
-  var bar = document.getElementById('hapus-progress-bar');
-  var label = document.getElementById('hapus-progress-label');
-  var count = document.getElementById('hapus-progress-count');
-  var status = document.getElementById('hapus-progress-status');
-  var subtitle = document.getElementById('hapus-progress-subtitle');
-
-  if (bar) bar.style.width = pct + '%';
-  if (label) label.textContent = pct + '%';
-  if (count) count.textContent = done + ' / ' + total;
-  if (status && statusText) status.textContent = statusText;
-  if (subtitle) subtitle.textContent = total > 0 ? ('Menghapus ' + total + ' tagihan') : 'Memproses...';
-}
-
-function hapusSettingKelasJS(kelasEnc, posEnc, periodeEnc, tanggalBatch, jumlahSiswa) {
-  var kelas = decodeURIComponent(kelasEnc || '');
-  var pos = decodeURIComponent(posEnc || '');
-  var periode = decodeURIComponent(periodeEnc || '');
-  jumlahSiswa = Number(jumlahSiswa) || 0;
-
-  var pesan =
-    'Hapus setting tagihan ini?\n\n' +
-    'Kelas   : ' + kelas + '\n' +
-    'Pos     : ' + pos + '\n' +
-    'Periode : ' + periode + '\n' +
-    'Tanggal : ' + (tanggalBatch || '-') + '\n' +
-    'Jumlah  : ' + jumlahSiswa + ' siswa\n\n' +
-    'Catatan: tagihan yang sudah ada pembayaran TIDAK akan dihapus.\n' +
-    'Lanjutkan?';
-
-  showConfirmation(pesan).then(function (confirmed) {
-    if (!confirmed) return;
-
-    showHapusProgressModal(jumlahSiswa);
-
-  var BATCH_SIZE = 20;
-  var totalDeleted = 0;
-  var totalSkipped = 0;
-  var totalTarget = jumlahSiswa;
-  var finished = false;
-
-  function jalankanBatch() {
-    google.script.run
-      .withSuccessHandler(function (result) {
-        if (!result || !result.success) {
-          hideHapusProgressModal();
-          alert('Gagal menghapus: ' + ((result && result.message) || 'Unknown error'));
-          return;
-        }
-
-        totalDeleted += (result.deleted || 0);
-        if (result.skipped) totalSkipped = result.skipped; // total skipped dihitung penuh tiap batch
-
-        var remaining = result.remaining || 0;
-
-        if (result.totalDeletable && result.totalDeletable > 0) {
-          totalTarget = result.totalDeletable + (result.skipped || 0);
-        }
-
-        var done = totalDeleted + totalSkipped;
-        if (result.totalMatched) {
-          done = Math.min(result.totalMatched, totalDeleted + totalSkipped);
-          totalTarget = result.totalMatched;
-        }
-
-        updateHapusProgress(
-          Math.min(done, totalTarget),
-          totalTarget,
-          remaining > 0
-            ? ('Menghapus... sisa ' + remaining + ' data belum dibayar')
-            : 'Menyelesaikan...'
-        );
-
-        // Tidak ada yang bisa dihapus sama sekali
-        if (totalDeleted === 0 && remaining === 0 && (result.deleted || 0) === 0) {
-          if (finished) return;
-          finished = true;
-          updateHapusProgress(totalTarget, totalTarget, 'Selesai');
-          setTimeout(function () {
-            hideHapusProgressModal();
-            if (totalSkipped > 0) {
-              alert(
-                'Tidak ada tagihan yang dihapus.\n\n' +
-                totalSkipped + ' tagihan dilindungi karena sudah ada pembayaran.'
-              );
-            } else {
-              alert(result.message || 'Tidak ada data yang dihapus.');
-            }
-            loadRiwayatSettingKelasJS(currentPageSettingKelas || 1);
-          }, 400);
-          return;
-        }
-
-        if (remaining > 0 && (result.deleted || 0) > 0) {
-          jalankanBatch();
-        } else {
-          if (finished) return;
-          finished = true;
-          updateHapusProgress(totalTarget, totalTarget, 'Selesai!');
-          setTimeout(function () {
-            hideHapusProgressModal();
-            var msg = 'Berhasil menghapus ' + totalDeleted + ' tagihan.';
-            if (totalSkipped > 0) {
-              msg += '\n' + totalSkipped + ' tagihan tidak dihapus karena sudah ada pembayaran.';
-            }
-            alert(msg);
-            loadRiwayatSettingKelasJS(currentPageSettingKelas || 1);
-          }, 400);
-        }
-      })
-      .withFailureHandler(function (err) {
-        hideHapusProgressModal();
-        alert('Gagal menghapus: ' + (err.message || err));
-      })
-      .hapusSettingKelasBatch(kelas, pos, periode, tanggalBatch, BATCH_SIZE);
+  
+  if (!idPos) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Peringatan',
+      text: 'Silakan pilih pos pembayaran.',
+      confirmButtonColor: '#f59e0b'
+    });
+    return;
   }
-
-    jalankanBatch();
+  
+  if (!periode) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Peringatan',
+      text: 'Silakan isi periode tagihan.',
+      confirmButtonColor: '#f59e0b'
+    });
+    return;
+  }
+  
+  // Ambil siswa yang dipilih
+  var checkboxes = document.querySelectorAll('.siswa-checkbox:checked');
+  if (checkboxes.length === 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Peringatan',
+      text: 'Silakan pilih minimal satu siswa.',
+      confirmButtonColor: '#f59e0b'
+    });
+    return;
+  }
+  
+  var idSiswaList = [];
+  checkboxes.forEach(function(cb) {
+    idSiswaList.push(cb.value);
+  });
+  
+  // Konfirmasi
+  var totalSiswa = idSiswaList.length;
+  var posName = document.getElementById('setting-pos').options[document.getElementById('setting-pos').selectedIndex]?.text || idPos;
+  
+  Swal.fire({
+    title: 'Konfirmasi Generate Tagihan',
+    html: `
+      <div style="text-align: left; padding: 10px 0;">
+        <p><strong>Jumlah Siswa:</strong> ${totalSiswa} siswa</p>
+        <p><strong>Pos Pembayaran:</strong> ${posName}</p>
+        <p><strong>Periode:</strong> ${periode}</p>
+        <p><strong>Nominal:</strong> ${nominal ? 'Rp ' + Number(nominal).toLocaleString('id-ID') : 'Default (dari master)'}</p>
+        <p><strong>Potongan:</strong> ${idPotongan ? 'Ya' : 'Default Siswa'}</p>
+        <p><strong>Bisa Dicicil:</strong> ${bisaDicicil ? 'Ya' : 'Tidak'}</p>
+        ${catatan ? '<p><strong>Catatan:</strong> ' + catatan + '</p>' : ''}
+      </div>
+    `,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: 'Ya, Generate!',
+    cancelButtonText: 'Batal'
+  }).then(function(result) {
+    if (result.isConfirmed) {
+      // Tampilkan progress
+      showLoading('Mengenerate tagihan...');
+      
+      var payload = {
+        id_pos: idPos,
+        periode: periode,
+        nominal: parseFloat(nominal) || 0,
+        id_potongan: idPotongan || '',
+        bisa_dicicil: bisaDicicil,
+        catatan: catatan || '',
+        id_siswa_list: idSiswaList
+      };
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          hideLoading();
+          
+          if (result.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Berhasil!',
+              text: result.message,
+              confirmButtonColor: '#10b981'
+            }).then(function() {
+              // Refresh data siswa
+              loadSiswaByKelasJS();
+              
+              // Reset checkbox
+              var checkAll = document.getElementById('setting-check-all');
+              if (checkAll) {
+                checkAll.checked = false;
+                checkAll.indeterminate = false;
+              }
+              
+              // Refresh riwayat
+              setTimeout(function() {
+                var isKelasActive = !document.getElementById('riwayat-tab-kelas').classList.contains('hidden');
+                if (isKelasActive) {
+                  searchRiwayatKelas(riwayatKelasPage || 1);
+                } else {
+                  searchRiwayatKelas(1);
+                }
+                
+                window._needRefreshKelas = true;
+                window._needRefreshSiswa = true;
+              }, 1000);
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Gagal Generate',
+              text: result.message,
+              confirmButtonColor: '#dc2626'
+            });
+          }
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Terjadi kesalahan: ' + err.message,
+            confirmButtonColor: '#dc2626'
+          });
+        })
+        .generateTagihanMassal(payload);
+    }
   });
 }
-  </script>   
+
+/**
+ * Reset filter siswa
+ */
+function resetFilterSiswaJS() {
+  document.getElementById('setting-filter-jk').value = 'ALL';
+  filterSiswaByJenisKelaminJS();
+}
+
+</script>

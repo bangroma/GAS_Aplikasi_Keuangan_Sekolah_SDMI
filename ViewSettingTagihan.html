@@ -1,4 +1,5 @@
 <div id="view-setting-tagihan" class="tab-content hidden space-y-6">
+  <!-- HEADER -->
   <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
     <div>
       <h2 class="text-2xl font-bold text-slate-800">Setting Tagihan Siswa</h2>
@@ -8,18 +9,12 @@
     </div>
   </div>
 
+  <!-- GRID: FORM + DAFTAR SISWA -->
   <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
     <!-- FORM SETTING -->
-    <div
-      class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-5 h-fit"
-    >
-      <h3
-        class="font-bold text-slate-800 border-b pb-2 flex items-center gap-2"
-      >
-        <span
-          class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs"
-          >1</span
-        >
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-5 h-fit">
+      <h3 class="font-bold text-slate-800 border-b pb-2 flex items-center gap-2">
+        <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">1</span>
         Pengaturan Tagihan
       </h3>
 
@@ -37,9 +32,7 @@
 
       <!-- Pos Pembayaran -->
       <div>
-        <label class="text-xs font-semibold text-slate-600"
-          >Pos Pembayaran</label
-        >
+        <label class="text-xs font-semibold text-slate-600">Pos Pembayaran</label>
         <select
           id="setting-pos"
           class="w-full mt-1 p-2.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
@@ -61,9 +54,7 @@
 
       <!-- Nominal -->
       <div>
-        <label class="text-xs font-semibold text-slate-600"
-          >Nominal Tagihan</label
-        >
+        <label class="text-xs font-semibold text-slate-600">Nominal Tagihan</label>
         <input
           type="number"
           id="setting-nominal"
@@ -75,9 +66,7 @@
 
       <!-- Potongan -->
       <div>
-        <label class="text-xs font-semibold text-slate-600"
-          >Potongan Tagihan</label
-        >
+        <label class="text-xs font-semibold text-slate-600">Potongan Tagihan</label>
         <select
           id="setting-potongan"
           class="w-full mt-1 p-2.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
@@ -97,19 +86,14 @@
           id="setting-bisa-dicicil"
           class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
         />
-        <label
-          for="setting-bisa-dicicil"
-          class="text-sm text-slate-700 font-medium cursor-pointer"
-        >
+        <label for="setting-bisa-dicicil" class="text-sm text-slate-700 font-medium cursor-pointer">
           Bisa Dicicil
         </label>
       </div>
 
       <!-- Catatan -->
       <div>
-        <label class="text-xs font-semibold text-slate-600"
-          >Catatan (opsional)</label
-        >
+        <label class="text-xs font-semibold text-slate-600">Catatan (opsional)</label>
         <input
           type="text"
           id="setting-catatan"
@@ -130,24 +114,30 @@
     </div>
 
     <!-- DAFTAR SISWA -->
-    <div
-      class="xl:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4"
-    >
-      <div
-        class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3"
-      >
+    <div class="xl:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3">
         <h3 class="font-bold text-slate-800 flex items-center gap-2">
-          <span
-            class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs"
-            >2</span
-          >
+          <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">2</span>
           Pilih Siswa
         </h3>
 
-        <div class="flex items-center gap-3">
-          <label
-            class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer"
-          >
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Filter Jenis Kelamin -->
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-semibold text-slate-600">Filter:</label>
+            <select
+              id="setting-filter-jk"
+              onchange="filterSiswaByJenisKelaminJS()"
+              class="px-3 py-1.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+            >
+              <option value="ALL">Semua</option>
+              <option value="LAKI-LAKI">👨 Laki-laki</option>
+              <option value="PEREMPUAN">👩 Perempuan</option>
+            </select>
+          </div>
+
+          <!-- Check All -->
+          <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
             <input
               type="checkbox"
               id="setting-check-all"
@@ -156,6 +146,7 @@
             />
             Pilih Semua
           </label>
+
           <span
             id="setting-siswa-count"
             class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-semibold"
@@ -166,36 +157,43 @@
       </div>
 
       <div id="setting-siswa-container" class="min-h-[320px]">
-        <div
-          class="flex flex-col items-center justify-center h-64 text-slate-400"
-        >
+        <div class="flex flex-col items-center justify-center h-64 text-slate-400">
           <i class="fa-solid fa-users text-4xl mb-3"></i>
           <p class="text-sm">Pilih kelas terlebih dahulu</p>
         </div>
       </div>
     </div>
+    <!-- PENUTUP DAFTAR SISWA -->
+
   </div>
+  <!-- PENUTUP GRID -->
 
   <!-- ===================== RIWAYAT SETTING TAGIHAN ===================== -->
-  <div
-    class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
-  >
-    <div
-      class="px-5 py-4 border-b bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-    >
-      <div>
-        <h3 class="font-bold text-slate-800">Riwayat Setting Tagihan</h3>
-        <p class="text-xs text-slate-500 mt-0.5">10 data terbaru per halaman</p>
-      </div>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+  <div class="px-5 py-4 border-b bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div>
+      <h3 class="font-bold text-slate-800">Riwayat Setting Tagihan</h3>
+      <p class="text-xs text-slate-500 mt-0.5">10 data terbaru per halaman</p>
+    </div>
+    <div class="flex items-center gap-2">
       <button
         id="btn-refresh-riwayat-setting"
         onclick="refreshRiwayatSettingAktif()"
-        class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg text-sm transition"
+        class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-sm transition flex items-center gap-2"
       >
         <i class="fa-solid fa-rotate mr-1"></i>
         Refresh
       </button>
+      <button
+        onclick="refreshAllRiwayatTagihan()"
+        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-sm transition flex items-center gap-2"
+        title="Refresh semua data riwayat"
+      >
+        <i class="fa-solid fa-arrows-rotate mr-1"></i>
+        Refresh Semua
+      </button>
     </div>
+  </div>
 
     <!-- TAB NAVIGATION -->
     <div class="flex border-b bg-white">
@@ -217,8 +215,42 @@
       </button>
     </div>
 
-    <!-- ==================== TAB 1: BERDASARKAN KELAS ==================== -->
+    <!-- TAB 1: BERDASARKAN KELAS -->
     <div id="riwayat-tab-kelas" class="riwayat-setting-panel">
+      <!-- SEARCH BAR KELAS -->
+      <div class="px-4 py-3 border-b bg-slate-50/50 flex flex-wrap items-center gap-2">
+        <div class="flex-1 min-w-[200px]">
+          <input
+            type="text"
+            id="search-kelas-keyword"
+            placeholder="Cari kelas, pos, periode..."
+            oninput="searchRiwayatKelas()"
+            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+          />
+        </div>
+        <div class="flex items-center gap-2">
+          <select
+            id="search-kelas-pos"
+            onchange="searchRiwayatKelas()"
+            class="px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+          >
+            <option value="ALL">Semua Pos</option>
+          </select>
+          <button
+            onclick="searchRiwayatKelas()"
+            class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition"
+          >
+            <i class="fa-solid fa-search"></i>
+          </button>
+          <button
+            onclick="exportRiwayatKelas()"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
+          >
+            <i class="fa-solid fa-file-excel"></i>
+          </button>
+        </div>
+      </div>
+
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm">
           <thead class="bg-white border-b text-slate-600 font-semibold">
@@ -230,15 +262,13 @@
               <th class="p-4 text-right">Nominal / Siswa</th>
               <th class="p-4 text-right">Total Tagihan</th>
               <th class="p-4 text-center">Status</th>
-              <th class="p-4 text-center">Aksi</th>
+              <th class="p-4 text-center" colspan="2">Aksi</th>
             </tr>
           </thead>
           <tbody id="table-riwayat-kelas-body" class="divide-y text-slate-700">
             <tr>
-              <td colspan="8" class="p-10 text-center text-slate-400">
-                <i
-                  class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"
-                ></i>
+              <td colspan="9" class="p-10 text-center text-slate-400">
+                <i class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"></i>
                 <p class="text-sm">Memuat riwayat...</p>
               </td>
             </tr>
@@ -247,10 +277,7 @@
       </div>
 
       <!-- PAGINATION KELAS -->
-      <div
-        id="riwayat-kelas-pagination"
-        class="px-5 py-4 border-t bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 hidden"
-      >
+      <div id="riwayat-kelas-pagination" class="px-5 py-4 border-t bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 hidden">
         <div id="riwayat-kelas-info" class="text-sm text-slate-600">
           Menampilkan 0 dari 0 data
         </div>
@@ -264,10 +291,7 @@
           >
             <i class="fa-solid fa-chevron-left"></i>
           </button>
-          <span
-            id="riwayat-kelas-page-info"
-            class="text-sm font-semibold text-slate-700 px-2"
-          >
+          <span id="riwayat-kelas-page-info" class="text-sm font-semibold text-slate-700 px-2">
             1 / 1
           </span>
           <button
@@ -283,8 +307,59 @@
       </div>
     </div>
 
-    <!-- ==================== TAB 2: BERDASARKAN SISWA ==================== -->
+    <!-- TAB 2: BERDASARKAN SISWA -->
     <div id="riwayat-tab-siswa" class="riwayat-setting-panel hidden">
+      <!-- SEARCH BAR SISWA -->
+      <div class="px-4 py-3 border-b bg-slate-50/50 space-y-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex-1 min-w-[180px]">
+            <input
+              type="text"
+              id="search-siswa-keyword"
+              placeholder="Cari nama, NISN, NIS..."
+              oninput="searchRiwayatSiswa()"
+              class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+            />
+          </div>
+          <select
+            id="search-siswa-kelas"
+            onchange="searchRiwayatSiswa()"
+            class="px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+          >
+            <option value="ALL">Semua Kelas</option>
+          </select>
+          <select
+            id="search-siswa-pos"
+            onchange="searchRiwayatSiswa()"
+            class="px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+          >
+            <option value="ALL">Semua Pos</option>
+          </select>
+          <select
+            id="search-siswa-status"
+            onchange="searchRiwayatSiswa()"
+            class="px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+          >
+            <option value="ALL">Semua Status</option>
+            <option value="BELUM_BAYAR">Belum Bayar</option>
+            <option value="CICILAN">Cicilan</option>
+            <option value="LUNAS">Lunas</option>
+          </select>
+          <button
+            onclick="searchRiwayatSiswa()"
+            class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition"
+          >
+            <i class="fa-solid fa-search"></i>
+          </button>
+          <button
+            onclick="exportRiwayatSiswa()"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
+          >
+            <i class="fa-solid fa-file-excel"></i>
+          </button>
+        </div>
+      </div>
+
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm">
           <thead class="bg-white border-b text-slate-600 font-semibold">
@@ -299,15 +374,10 @@
               <th class="p-4 text-center">Aksi</th>
             </tr>
           </thead>
-          <tbody
-            id="table-riwayat-setting-body"
-            class="divide-y text-slate-700"
-          >
+          <tbody id="table-riwayat-setting-body" class="divide-y text-slate-700">
             <tr>
-              <td colspan="7" class="p-10 text-center text-slate-400">
-                <i
-                  class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"
-                ></i>
+              <td colspan="8" class="p-10 text-center text-slate-400">
+                <i class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"></i>
                 <p class="text-sm">Memuat riwayat...</p>
               </td>
             </tr>
@@ -316,10 +386,7 @@
       </div>
 
       <!-- PAGINATION SISWA -->
-      <div
-        id="riwayat-setting-pagination"
-        class="px-5 py-4 border-t bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 hidden"
-      >
+      <div id="riwayat-setting-pagination" class="px-5 py-4 border-t bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 hidden">
         <div id="riwayat-setting-info" class="text-sm text-slate-600">
           Menampilkan 0 dari 0 data
         </div>
@@ -332,14 +399,9 @@
           >
             <i class="fa-solid fa-chevron-left"></i>
           </button>
-
-          <span
-            id="riwayat-setting-page-info"
-            class="text-sm font-semibold text-slate-700 px-2"
-          >
+          <span id="riwayat-setting-page-info" class="text-sm font-semibold text-slate-700 px-2">
             1 / 1
           </span>
-
           <button
             id="btn-riwayat-next"
             type="button"
@@ -352,9 +414,13 @@
       </div>
     </div>
   </div>
-</div>
+  <!-- PENUTUP RIWAYAT SETTING TAGIHAN -->
 
-<!-- MODAL PROGRESS GENERATE -->
+</div>
+<!-- PENUTUP view-setting-tagihan -->
+
+<!-- ==================== MODALS ==================== -->
+
 <!-- MODAL DETAIL SISWA MENUNGGAK -->
 <div
   id="modal-detail-siswa-menunggak"
@@ -394,6 +460,7 @@
   </div>
 </div>
 
+<!-- MODAL PROGRESS GENERATE -->
 <div
   id="modal-generate-progress"
   class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 p-4"

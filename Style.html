@@ -36,4 +36,45 @@
       margin: 0;
     }
   }
+
+
+  /* Styling untuk filter jenis kelamin */
+#setting-filter-jk {
+  min-width: 130px;
+  border-color: #e2e8f0;
+}
+
+#setting-filter-jk:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Styling untuk checkbox siswa */
+.siswa-checkbox:checked {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+.siswa-checkbox:checked:focus {
+  ring-color: #10b981;
+}
+
+/* Hover effect untuk label siswa */
+#setting-siswa-container label:hover {
+  background-color: #f8fafc;
+  border-color: #10b981;
+}
+
+/* Styling untuk tombol hapus yang dinonaktifkan */
+.btn-hapus-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f1f5f9 !important;
+  color: #94a3b8 !important;
+}
+
+.btn-hapus-disabled:hover {
+  background-color: #f1f5f9 !important;
+  transform: none !important;
+}
 </style>
