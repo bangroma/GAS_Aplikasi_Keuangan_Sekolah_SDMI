@@ -2049,6 +2049,15 @@ function getDetailTunggakanPerKelas(kelas, idPos) {
     return normalizeText(s.status || s.status_siswa).toUpperCase() === "AKTIF";
   });
 
+  const siswaKelas = siswaAktif.filter(function (s) {
+    return normalizeText(s.kelas) === kelas;
+  });
+  const siswaKelasIds = {};
+
+  siswaKelas.forEach(function (siswa) {
+    siswaKelasIds[normalizeText(siswa.id_siswa)] = true;
+  });
+
   // Filter tagihan sesuai pos jika dipilih
   if (idPos && idPos !== "ALL") {
     tagihanList = tagihanList.filter(function (t) {
@@ -2056,30 +2065,26 @@ function getDetailTunggakanPerKelas(kelas, idPos) {
     });
   }
 
-  // Hanya tagihan yang masih memiliki sisa
-  tagihanList = tagihanList.filter(function (t) {
-    const nominalAkhir = toNumber(t.nominal_akhir);
-    const terbayar = toNumber(t.terbayar);
-    const sisa = Math.max(
-      0,
-      toNumber(t.sisa_tunggakan) || nominalAkhir - terbayar,
-    );
+  const tagihanBySiswa = {};
 
-    return sisa > 0;
+  tagihanList.forEach(function (tagihan) {
+    const idSiswa = normalizeText(tagihan.id_siswa);
+
+    if (!siswaKelasIds[idSiswa]) return;
+
+    if (!tagihanBySiswa[idSiswa]) {
+      tagihanBySiswa[idSiswa] = [];
+    }
+
+    tagihanBySiswa[idSiswa].push(tagihan);
   });
 
   const hasil = [];
 
-  siswaAktif
-    .filter(function (s) {
-      return normalizeText(s.kelas) === kelas;
-    })
-    .forEach(function (siswa) {
+  siswaKelas.forEach(function (siswa) {
       const idSiswa = normalizeText(siswa.id_siswa);
 
-      const tagihanSiswa = tagihanList.filter(function (t) {
-        return normalizeText(t.id_siswa) === idSiswa;
-      });
+      const tagihanSiswa = tagihanBySiswa[idSiswa] || [];
 
       if (tagihanSiswa.length === 0) return;
 
@@ -2446,6 +2451,7 @@ function generateTagihanMassal(payload) {
     const idPos = normalizeText(payload.id_pos);
     const periode = normalizeText(payload.periode);
     const nominalInput = toNumber(payload.nominal);
+    const idPotonganInput = normalizeText(payload.id_potongan);
     const bisaDicicil =
       payload.bisa_dicicil === true || toBoolean(payload.bisa_dicicil);
     const catatan = normalizeText(payload.catatan);
@@ -2469,6 +2475,15 @@ function generateTagihanMassal(payload) {
 
     if (!pos) {
       throw new Error("Pos pembayaran tidak ditemukan.");
+    }
+
+    if (idPotonganInput && idPotonganInput !== "NONE") {
+      const potonganInput = potonganList.find(function (p) {
+        return normalizeText(p.id_potongan) === idPotonganInput;
+      });
+      if (!potonganInput) {
+        throw new Error("Potongan yang dipilih tidak ditemukan.");
+      }
     }
 
     // Nominal: prioritaskan input user, kalau kosong pakai tarif_default
@@ -2548,9 +2563,11 @@ function generateTagihanMassal(payload) {
         return;
       }
 
-      // Hitung potongan default siswa
+      // Gunakan potongan dari form jika dipilih; jika tidak, gunakan potongan default siswa.
       let nominalPotongan = 0;
-      const idPotongan = normalizeText(siswa.id_potongan_default);
+      const idPotongan = idPotonganInput === "NONE"
+        ? ""
+        : idPotonganInput || normalizeText(siswa.id_potongan_default);
 
       if (idPotongan && idPotongan !== "NONE") {
         const pData = potonganList.find(function (p) {
@@ -3339,6 +3356,7 @@ function getRiwayatSettingKelas(page, perPage) {
 
     // ===== 1. Sheet Tagihan =====
     let sheetTagihan =
+      ss.getSheetByName("Tagihan_Siswa") ||
       ss.getSheetByName("Tagihan") ||
       ss.getSheetByName("tagihan") ||
       ss.getSheetByName("TAGIHAN");
@@ -3582,6 +3600,57 @@ function getRiwayatSettingKelas(page, perPage) {
       page: 1,
       error: err.message,
     };
+  }
+}
+
+/**
+ * Hapus satu tagihan berdasarkan ID.
+ */
+function hapusTagihanSiswa(idTagihan) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+
+  try {
+    idTagihan = normalizeText(idTagihan);
+    if (!idTagihan) throw new Error("ID tagihan wajib diisi.");
+
+    const sheet = getSheet("Tagihan_Siswa");
+    const values = sheet.getDataRange().getValues();
+    if (values.length < 2) throw new Error("Tagihan tidak ditemukan.");
+
+    const headers = values[0].map(function (header) {
+      return normalizeText(header).toLowerCase();
+    });
+    const idCol = headers.indexOf("id_tagihan");
+    const paidCol = headers.indexOf("terbayar");
+    const statusCol = headers.indexOf("status");
+
+    if (idCol === -1) throw new Error("Kolom id_tagihan tidak ditemukan.");
+
+    for (let i = 1; i < values.length; i++) {
+      if (normalizeText(values[i][idCol]) !== idTagihan) continue;
+
+      const terbayar = paidCol === -1 ? 0 : toNumber(values[i][paidCol]);
+      const status = statusCol === -1
+        ? ""
+        : normalizeText(values[i][statusCol]).toUpperCase();
+      if (terbayar > 0 || status === "LUNAS" || status === "CICILAN") {
+        throw new Error("Tagihan yang sudah memiliki pembayaran tidak dapat dihapus.");
+      }
+
+      sheet.deleteRow(i + 1);
+      SpreadsheetApp.flush();
+      return {
+        success: true,
+        message: "Tagihan " + idTagihan + " berhasil dihapus.",
+      };
+    }
+
+    throw new Error("Tagihan " + idTagihan + " tidak ditemukan.");
+  } catch (err) {
+    return { success: false, message: err.message };
+  } finally {
+    lock.releaseLock();
   }
 }
 
