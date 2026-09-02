@@ -45,7 +45,7 @@ function generateTagihanSPPBulanan() {
     }
 
     const tarifDefaultSPP = toNumber(
-      posSPP.tarif_default || posSPP.nominal_default,
+      posSPP.tarif_default,
     );
 
     if (tarifDefaultSPP <= 0) {
@@ -68,7 +68,7 @@ function generateTagihanSPPBulanan() {
     );
 
     const siswaList = getSheetDataAsObjects("Siswa").filter(function (s) {
-      const status = normalizeText(s.status || s.status_siswa).toUpperCase();
+      const status = normalizeText(s.status_siswa).toUpperCase();
 
       return status === "AKTIF";
     });
@@ -414,7 +414,7 @@ function generateTagihanMassal(payload) {
 
       if (tagihanMap.status_siswa !== undefined) {
         row[tagihanMap.status_siswa] =
-          normalizeText(siswa.status || siswa.status_siswa) || "AKTIF";
+          normalizeText(siswa.status_siswa) || "AKTIF";
       }
 
       if (tagihanMap.tanggal_tagihan !== undefined)
@@ -529,7 +529,7 @@ function getRiwayatGenerateTagihan(page, limit) {
         id_tagihan: normalizeText(t.id_tagihan),
         id_siswa: idSiswa,
         nama_siswa:
-          normalizeText(siswa.nama_lengkap || siswa.nama_siswa) || "-",
+          normalizeText(siswa.nama_lengkap) || "-",
         kelas: normalizeText(siswa.kelas) || "-",
         id_pos: normalizeText(t.id_pos),
         nama_pos:
@@ -1527,7 +1527,7 @@ function cariSettingTagihanBySiswa(keyword, filterPos, filterKelas, filterStatus
         status = "CICILAN";
       }
 
-      const namaSiswa = normalizeText(siswa.nama_lengkap || siswa.nama_siswa) || "-";
+      const namaSiswa = normalizeText(siswa.nama_lengkap) || "-";
       const kelas = normalizeText(siswa.kelas) || "-";
 
       return {
@@ -1632,7 +1632,7 @@ function getSiswaForTagihanFilter(keyword, filterKelas) {
 
     // Filter siswa aktif
     siswaList = siswaList.filter(function (s) {
-      const status = normalizeText(s.status || s.status_siswa).toUpperCase();
+      const status = normalizeText(s.status_siswa).toUpperCase();
       return status === "AKTIF";
     });
 
@@ -1640,7 +1640,7 @@ function getSiswaForTagihanFilter(keyword, filterKelas) {
     if (keyword) {
       siswaList = siswaList.filter(function (s) {
         const searchable = [
-          normalizeText(s.nama_lengkap || s.nama_siswa),
+          normalizeText(s.nama_lengkap),
           normalizeText(s.nisn),
           normalizeText(s.nis),
           normalizeText(s.kelas)
@@ -1672,7 +1672,7 @@ function getSiswaForTagihanFilter(keyword, filterKelas) {
         id_siswa: normalizeText(s.id_siswa),
         nisn: normalizeText(s.nisn),
         nis: normalizeText(s.nis),
-        nama_lengkap: normalizeText(s.nama_lengkap || s.nama_siswa),
+        nama_lengkap: normalizeText(s.nama_lengkap),
         kelas: normalizeText(s.kelas),
         tahun_pelajaran: normalizeText(s.tahun_pelajaran),
         id_potongan_default: idPotongan,
@@ -1698,7 +1698,7 @@ function getTagihanStatistics() {
     // Filter siswa aktif
     const siswaAktifIds = new Set();
     siswaList.forEach(function (s) {
-      const status = normalizeText(s.status || s.status_siswa).toUpperCase();
+      const status = normalizeText(s.status_siswa).toUpperCase();
       if (status === "AKTIF") {
         siswaAktifIds.add(normalizeText(s.id_siswa));
       }

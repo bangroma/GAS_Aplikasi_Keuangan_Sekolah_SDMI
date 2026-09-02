@@ -180,7 +180,7 @@
             type="button"
             onclick='selectSiswaJS(${JSON.stringify({
               id_siswa: s.id_siswa,
-              nama: s.nama_lengkap || s.nama_siswa || "",
+              nama: s.nama_lengkap || "",
               nisn: s.nisn || s.nis || "",
               nis: s.nis || "",
               kelas: s.kelas || "",
@@ -189,7 +189,7 @@
             class="w-full text-left p-3 hover:bg-emerald-50 cursor-pointer transition">
 
             <div class="font-bold text-slate-800 text-sm">
-              ${escapeHtml(s.nama_lengkap || s.nama_siswa || "-")}
+              ${escapeHtml(s.nama_lengkap || "-")}
             </div>
 
             <div class="text-xs text-slate-500">
@@ -4450,8 +4450,6 @@ function refreshRiwayatSiswa() {
           });
 
           // Alias umum
-          if (!obj.nama_lengkap && obj.nama_siswa)
-            obj.nama_lengkap = obj.nama_siswa;
           if (!obj.status_siswa && obj.status) obj.status_siswa = obj.status;
 
           return obj;

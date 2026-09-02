@@ -9,7 +9,7 @@
 
 function getRekapTunggakanPerKelas(idPos) {
   const siswaList = getSheetDataAsObjects("Siswa").filter(function (s) {
-    const status = normalizeText(s.status || s.status_siswa).toUpperCase();
+    const status = normalizeText(s.status_siswa).toUpperCase();
     return status === "AKTIF";
   });
 
@@ -70,7 +70,7 @@ function getRekapTunggakanPerKelas(idPos) {
 
 function getListKelasForLaporan() {
   const siswaList = getSheetDataAsObjects("Siswa").filter(function (s) {
-    const status = normalizeText(s.status || s.status_siswa).toUpperCase();
+    const status = normalizeText(s.status_siswa).toUpperCase();
     return status === "AKTIF";
   });
 
@@ -131,7 +131,7 @@ function getSiswaByKelasForLaporan(kelas, idPos) {
 
   // Filter siswa aktif
   const siswaAktif = siswaList.filter(function (s) {
-    return normalizeText(s.status || s.status_siswa).toUpperCase() === "AKTIF";
+    return normalizeText(s.status_siswa).toUpperCase() === "AKTIF";
   });
 
   const siswaKelas = siswaAktif.filter(function (s) {
@@ -217,7 +217,7 @@ function getSiswaByKelasForLaporan(kelas, idPos) {
       id_siswa: idSiswa,
       nisn: normalizeText(siswa.nisn),
       nis: normalizeText(siswa.nis),
-      nama_lengkap: normalizeText(siswa.nama_lengkap || siswa.nama_siswa),
+      nama_lengkap: normalizeText(siswa.nama_lengkap),
       kelas: normalizeText(siswa.kelas),
       total_tagihan: totalTagihan,
       total_dibayar: totalDibayar,
@@ -398,7 +398,7 @@ function getDetailTunggakanPerKelas(kelas, idPos) {
   let tagihanList = getSheetDataAsObjects("Tagihan_Siswa");
 
   const siswaAktif = siswaList.filter(function (s) {
-    return normalizeText(s.status || s.status_siswa).toUpperCase() === "AKTIF";
+    return normalizeText(s.status_siswa).toUpperCase() === "AKTIF";
   });
 
   const siswaKelas = siswaAktif.filter(function (s) {
@@ -486,7 +486,7 @@ function getDetailTunggakanPerKelas(kelas, idPos) {
       id_siswa: idSiswa,
       nisn: normalizeText(siswa.nisn),
       nis: normalizeText(siswa.nis),
-      nama_lengkap: normalizeText(siswa.nama_lengkap || siswa.nama_siswa),
+      nama_lengkap: normalizeText(siswa.nama_lengkap),
       kelas: normalizeText(siswa.kelas),
       total_tagihan: totalTagihan,
       total_dibayar: totalDibayar,

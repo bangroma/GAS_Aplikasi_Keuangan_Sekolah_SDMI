@@ -38,7 +38,7 @@ function getRiwayatTransaksi(filter) {
     });
 
     const namaSiswa = siswa
-      ? normalizeText(siswa.nama_lengkap || siswa.nama_siswa)
+      ? normalizeText(siswa.nama_lengkap)
       : "-";
     const nisn = siswa ? normalizeText(siswa.nisn) : "";
     const nis = siswa ? normalizeText(siswa.nis) : "";
@@ -177,7 +177,7 @@ function getDetailTransaksi(idTransaksi) {
       tanggal: normalizeText(trx.tanggal_transaksi || trx.tanggal),
       id_siswa: idSiswa,
       nama_siswa: siswa
-        ? normalizeText(siswa.nama_lengkap || siswa.nama_siswa)
+        ? normalizeText(siswa.nama_lengkap)
         : "-",
       nisn: siswa ? normalizeText(siswa.nisn) : "",
       nis: siswa ? normalizeText(siswa.nis) : "",

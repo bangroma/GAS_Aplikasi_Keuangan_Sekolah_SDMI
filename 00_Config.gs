@@ -32,7 +32,7 @@ const DATABASE_SCHEMA = {
     "jenis_kelamin",
     "kelas",
     "tahun_pelajaran",
-    "status",
+    "status_siswa",
     "id_potongan_default",
   ],
 
@@ -71,6 +71,7 @@ const DATABASE_SCHEMA = {
     "keterangan",
     "nominal_potongan",
     "nominal_akhir",
+    "diskon_tambahan_total",
     "status",
   ],
 
@@ -221,7 +222,111 @@ function calculateSisa(nominalAkhir, terbayar) {
 function formatRupiah(value) {
   return "Rp " + toNumber(value).toLocaleString("id-ID");
 }
+function migrateDatabaseSchema() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hasil = {
+    success: true,
+    migrasi: [],
+    pesan: [],
+  };
 
+  const sheet = ss.getSheetByName("Siswa");
+
+  if (!sheet) {
+    hasil.pesan.push("Sheet Siswa belum ada. Tidak ada migrasi yang diperlukan.");
+    return hasil;
+  }
+
+  const lastColumn = sheet.getLastColumn();
+
+  if (lastColumn < 1) {
+    hasil.pesan.push("Sheet Siswa kosong. Tidak ada migrasi yang diperlukan.");
+    return hasil;
+  }
+
+  let headers = sheet
+    .getRange(1, 1, 1, lastColumn)
+    .getValues()[0]
+    .map(function (h) {
+      return normalizeText(h);
+    });
+
+  const statusIndex = headers.indexOf("status");
+  const statusSiswaIndex = headers.indexOf("status_siswa");
+
+  if (statusIndex === -1 && statusSiswaIndex === -1) {
+    hasil.pesan.push("Kolom status/status_siswa tidak ditemukan.");
+    return hasil;
+  }
+
+  if (statusIndex === -1 && statusSiswaIndex !== -1) {
+    hasil.pesan.push("Siswa sudah menggunakan status_siswa.");
+    return hasil;
+  }
+
+  if (statusIndex !== -1 && statusSiswaIndex === -1) {
+    const newColumn = sheet.getLastColumn() + 1;
+
+    sheet
+      .getRange(1, newColumn)
+      .setValue("status_siswa");
+
+    const lastRow = sheet.getLastRow();
+
+    if (lastRow > 1) {
+      const values = sheet
+        .getRange(2, statusIndex + 1, lastRow - 1, 1)
+        .getValues();
+
+      sheet
+        .getRange(2, newColumn, lastRow - 1, 1)
+        .setValues(values);
+    }
+
+    sheet.deleteColumn(statusIndex + 1);
+
+    hasil.migrasi.push("Siswa.status → Siswa.status_siswa");
+    return hasil;
+  }
+
+  if (statusIndex !== -1 && statusSiswaIndex !== -1) {
+    const lastRow = sheet.getLastRow();
+
+    if (lastRow > 1) {
+      const statusValues = sheet
+        .getRange(2, statusIndex + 1, lastRow - 1, 1)
+        .getValues();
+
+      const statusSiswaValues = sheet
+        .getRange(2, statusSiswaIndex + 1, lastRow - 1, 1)
+        .getValues();
+
+      const mergedValues = statusSiswaValues.map(function (row, index) {
+        return [
+          row[0] !== "" && row[0] !== null
+            ? row[0]
+            : statusValues[index][0],
+        ];
+      });
+
+      sheet
+        .getRange(2, statusSiswaIndex + 1, lastRow - 1, 1)
+        .setValues(mergedValues);
+    }
+
+    const deleteIndex = statusIndex;
+
+    sheet.deleteColumn(deleteIndex + 1);
+
+    hasil.migrasi.push(
+      "Siswa.status digabung ke Siswa.status_siswa"
+    );
+
+    return hasil;
+  }
+
+  return hasil;
+}
 // ============================================================
 // 4. SETUP DATABASE
 // ============================================================
@@ -234,7 +339,14 @@ function setupDatabase() {
     dibuat: [],
     diperbaiki: [],
     data_master: [],
+    migrasi: [],
   };
+
+  const migrasi = migrateDatabaseSchema();
+
+  if (migrasi && migrasi.migrasi) {
+    hasil.migrasi = migrasi.migrasi;
+  }
 
   Object.keys(DATABASE_SCHEMA).forEach(function (sheetName) {
     const requiredColumns = DATABASE_SCHEMA[sheetName];

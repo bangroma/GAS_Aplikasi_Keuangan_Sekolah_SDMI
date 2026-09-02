@@ -37,7 +37,13 @@ function getTagihanSiswa(idSiswa) {
           : Math.max(0, nominalAsal - nominalPotongan);
 
       const terbayar = toNumber(t.terbayar);
-      const sisaTunggakan = Math.max(0, nominalAkhir - terbayar);
+
+      const diskonTambahanTotal = toNumber(t.diskon_tambahan_total);
+      const pelunasanEfektif = terbayar + diskonTambahanTotal;
+      const sisaTunggakan = Math.max(
+        0,
+        nominalAkhir - pelunasanEfektif,
+      );
 
       // PERIODE BERSIH
       let periodeBersih = "";
@@ -62,7 +68,7 @@ function getTagihanSiswa(idSiswa) {
       let status = normalizeText(t.status).toUpperCase();
       if (sisaTunggakan <= 0) {
         status = "LUNAS";
-      } else if (terbayar > 0) {
+      } else if (pelunasanEfektif > 0) {
         status = "CICILAN";
       } else {
         status = "BELUM_BAYAR";
@@ -81,6 +87,7 @@ function getTagihanSiswa(idSiswa) {
         nominal_asal: nominalAsal,
         nominal_potongan: nominalPotongan,
         nominal_akhir: nominalAkhir,
+        diskon_tambahan_total: diskonTambahanTotal,
         terbayar: terbayar,
         sisa_tunggakan: sisaTunggakan,
         status: status,
@@ -311,6 +318,7 @@ function simpanTransaksi(payload) {
       "id_siswa",
       "id_pos",
       "nominal_akhir",
+      "diskon_tambahan_total",
       "terbayar",
       "sisa_tunggakan",
       "status",
@@ -330,13 +338,13 @@ function simpanTransaksi(payload) {
     }
 
     const statusSiswa = normalizeText(
-      siswa.status || siswa.status_siswa,
+      siswa.status_siswa,
     ).toUpperCase();
 
     if (statusSiswa !== "AKTIF") {
       throw new Error(
         "Siswa " +
-          normalizeText(siswa.nama_lengkap || siswa.nama_siswa) +
+          normalizeText(siswa.nama_lengkap) +
           " tidak berstatus AKTIF.",
       );
     }
@@ -360,6 +368,8 @@ function simpanTransaksi(payload) {
       idPos: tagihanHeaders.indexOf("id_pos"),
 
       nominalAkhir: tagihanHeaders.indexOf("nominal_akhir"),
+
+      diskonTambahanTotal: tagihanHeaders.indexOf("diskon_tambahan_total"),
 
       terbayar: tagihanHeaders.indexOf("terbayar"),
 
@@ -415,9 +425,26 @@ function simpanTransaksi(payload) {
 
       const nominalAkhir = toNumber(row[col.nominalAkhir]);
 
+
       const currentTerbayar = toNumber(row[col.terbayar]);
 
-      const currentSisa = calculateSisa(nominalAkhir, currentTerbayar);
+
+      const currentDiskonTotal = toNumber(
+        row[col.diskonTambahanTotal],
+      );
+
+      const currentSisa = calculateSisa(
+        nominalAkhir,
+        currentTerbayar + currentDiskonTotal,
+      );
+
+      const diskonTambahan = Math.max(
+        0,
+        toNumber(item.diskon_tambahan),
+      );
+
+      const pelunasanEfektif =
+        item.nominal_dibayar + diskonTambahan;
 
       if (
         currentSisa <= 0 ||
@@ -435,11 +462,31 @@ function simpanTransaksi(payload) {
         );
       }
 
+
+
+      if (diskonTambahan > currentSisa) {
+        throw new Error(
+          "Diskon tambahan tagihan " +
+            item.id_tagihan +
+            " melebihi sisa tagihan. Sisa: " +
+            formatRupiah(currentSisa),
+        );
+      }
+
+      if (pelunasanEfektif > currentSisa) {
+        throw new Error(
+          "Pembayaran + diskon tambahan tagihan " +
+            item.id_tagihan +
+            " melebihi sisa tagihan. Sisa: " +
+            formatRupiah(currentSisa),
+        );
+      }
+
       const pos = posList.find(function (p) {
         return normalizeText(p.id_pos) === normalizeText(row[col.idPos]);
       });
 
-      const isPartial = item.nominal_dibayar < currentSisa;
+      const isPartial = pelunasanEfektif < currentSisa;
 
       if (isPartial && pos && !toBoolean(pos.bisa_dicicil)) {
         throw new Error("Tagihan " + item.id_tagihan + " tidak dapat dicicil.");
@@ -447,9 +494,18 @@ function simpanTransaksi(payload) {
 
       const newTerbayar = currentTerbayar + item.nominal_dibayar;
 
-      const newSisa = calculateSisa(nominalAkhir, newTerbayar);
 
-      const newStatus = newSisa <= 0 ? "LUNAS" : "CICILAN";
+
+      const newDiskonTambahanTotal =
+        currentDiskonTotal + diskonTambahan;
+
+      const newSisa = calculateSisa(
+        nominalAkhir,
+        newTerbayar + newDiskonTambahanTotal,
+      );
+
+      const newStatus =
+        newSisa <= 0 ? "LUNAS" : "CICILAN";
 
       if (!item.nama_item_snapshot) {
         item.nama_item_snapshot = pos
@@ -460,6 +516,8 @@ function simpanTransaksi(payload) {
       originalTagihan.push({
         rowIndex: found.rowIndex,
 
+        diskonTambahanTotal: row[col.diskonTambahanTotal],
+
         terbayar: row[col.terbayar],
 
         sisa: row[col.sisa],
@@ -469,6 +527,8 @@ function simpanTransaksi(payload) {
 
       updatePlan.push({
         rowIndex: found.rowIndex,
+
+                newDiskonTambahanTotal: newDiskonTambahanTotal,
 
         newTerbayar: newTerbayar,
 
@@ -569,6 +629,11 @@ function simpanTransaksi(payload) {
 
     // UPDATE TAGIHAN
     updatePlan.forEach(function (update) {
+
+      tagihanSheet
+        .getRange(update.rowIndex, col.diskonTambahanTotal + 1)
+        .setValue(update.newDiskonTambahanTotal);
+
       tagihanSheet
         .getRange(update.rowIndex, col.terbayar + 1)
         .setValue(update.newTerbayar);
@@ -608,6 +673,16 @@ function simpanTransaksi(payload) {
       const tagihanMap = getHeaderMap(tagihanSheet);
 
       originalTagihan.forEach(function (original) {
+
+        if (tagihanMap.diskon_tambahan_total !== undefined) {
+          tagihanSheet
+            .getRange(
+              original.rowIndex,
+              tagihanMap.diskon_tambahan_total + 1,
+            )
+            .setValue(original.diskonTambahanTotal);
+        }
+
         if (tagihanMap.terbayar !== undefined) {
           tagihanSheet
             .getRange(original.rowIndex, tagihanMap.terbayar + 1)

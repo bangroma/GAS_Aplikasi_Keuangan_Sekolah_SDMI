@@ -20,13 +20,13 @@ function cariSiswa(keyword) {
 
   return siswaList
     .filter(function (s) {
-      const status = normalizeText(s.status || s.status_siswa).toUpperCase();
+      const status = normalizeText(s.status_siswa).toUpperCase();
 
       return status === "AKTIF";
     })
     .filter(function (s) {
       return (
-        normalizeText(s.nama_lengkap || s.nama_siswa)
+        normalizeText(s.nama_lengkap)
           .toLowerCase()
           .includes(kw) ||
         normalizeText(s.nisn).toLowerCase().includes(kw) ||
@@ -44,7 +44,7 @@ function cariSiswa(keyword) {
         id_siswa: s.id_siswa,
         nisn: s.nisn,
         nis: s.nis,
-        nama_lengkap: s.nama_lengkap || s.nama_siswa || "",
+        nama_lengkap: s.nama_lengkap || "",
         kelas: s.kelas,
         tahun_pelajaran: s.tahun_pelajaran,
         id_potongan_default: s.id_potongan_default || "",

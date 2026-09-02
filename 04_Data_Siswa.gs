@@ -19,7 +19,7 @@ function getSiswaByKelas(kelas) {
 
   return siswaList
     .filter(function (s) {
-      const status = normalizeText(s.status || s.status_siswa).toUpperCase();
+      const status = normalizeText(s.status_siswa).toUpperCase();
       return status === "AKTIF" && normalizeText(s.kelas) === kelas;
     })
     .map(function (s) {
@@ -33,7 +33,7 @@ function getSiswaByKelas(kelas) {
         id_siswa: normalizeText(s.id_siswa),
         nisn: normalizeText(s.nisn),
         nis: normalizeText(s.nis),
-        nama_lengkap: normalizeText(s.nama_lengkap || s.nama_siswa),
+        nama_lengkap: normalizeText(s.nama_lengkap),
         jenis_kelamin: normalizeText(s.jenis_kelamin), // <-- Tambahkan ini
         kelas: normalizeText(s.kelas),
         tahun_pelajaran: normalizeText(s.tahun_pelajaran),
@@ -54,7 +54,7 @@ function getSiswaByKelas(kelas) {
 
 function getListKelas() {
   const siswaList = getSheetDataAsObjects("Siswa").filter(function (s) {
-    const status = normalizeText(s.status || s.status_siswa).toUpperCase();
+    const status = normalizeText(s.status_siswa).toUpperCase();
     return status === "AKTIF";
   });
 
@@ -97,11 +97,11 @@ function getSiswaList() {
       id_siswa: normalizeText(s.id_siswa),
       nisn: normalizeText(s.nisn),
       nis: normalizeText(s.nis),
-      nama_lengkap: normalizeText(s.nama_lengkap || s.nama_siswa),
+      nama_lengkap: normalizeText(s.nama_lengkap),
       jenis_kelamin: normalizeText(s.jenis_kelamin),
       kelas: normalizeText(s.kelas),
       tahun_pelajaran: normalizeText(s.tahun_pelajaran),
-      status_siswa: normalizeText(s.status_siswa || s.status) || "AKTIF",
+      status_siswa: normalizeText(s.status_siswa) || "AKTIF",
       id_potongan_default: idPotongan,
       nama_potongan: potongan
         ? normalizeText(potongan.nama_potongan)
