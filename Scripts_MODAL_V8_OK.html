@@ -2033,24 +2033,9 @@
     let totalSisa = 0;
 
     currentModalTunggakanData.forEach(function (siswa) {
-      const tagihan = Array.isArray(siswa.tagihan)
-        ? siswa.tagihan
-        : [];
-
-      tagihan.forEach(function (t) {
-        const nominal = Number(t.nominal_akhir) || 0;
-        const terbayar = Number(t.terbayar) || 0;
-        const diskon = Number(t.diskon_tambahan_total) || 0;
-
-        const efektif = Math.min(
-          nominal,
-          Math.max(0, terbayar + diskon)
-        );
-
-        totalTagihan += nominal;
-        totalDibayar += terbayar;
-        totalSisa += Math.max(0, nominal - efektif);
-      });
+      totalTagihan += Number(siswa.total_tagihan) || 0;
+      totalDibayar += Number(siswa.total_dibayar) || 0;
+      totalSisa += Number(siswa.total_sisa) || 0;
     });
 
     function rupiah(value) {
@@ -2064,76 +2049,40 @@
     let siswaHtml = "";
 
     currentModalTunggakanData.forEach(function (siswa, index) {
-      const tagihanSiswa = Array.isArray(siswa.tagihan)
-        ? siswa.tagihan
-        : [];
+      const totalSiswa = Number(siswa.total_tagihan) || 0;
+      const dibayarSiswa = Number(siswa.total_dibayar) || 0;
+      const sisaSiswa = Number(siswa.total_sisa) || 0;
 
-      let totalSiswa = 0;
-      let dibayarSiswa = 0;
-      let efektifSiswa = 0;
-      let sisaSiswa = 0;
+      let progressSiswa = Number(siswa.progress) || 0;
 
-      tagihanSiswa.forEach(function (t) {
-        const nominal = Number(t.nominal_akhir) || 0;
-        const terbayar = Number(t.terbayar) || 0;
-        const diskon = Number(t.diskon_tambahan_total) || 0;
+      progressSiswa = Math.max(0, Math.min(100, progressSiswa));
 
-        const efektif = Math.min(
-          nominal,
-          Math.max(0, terbayar + diskon)
-        );
-
-        totalSiswa += nominal;
-        dibayarSiswa += terbayar;
-        efektifSiswa += efektif;
-        sisaSiswa += Math.max(0, nominal - efektif);
-      });
-
-      const progressSiswa = totalSiswa > 0
-        ? Math.max(
-            0,
-            Math.min(100, (efektifSiswa / totalSiswa) * 100)
-          )
-        : 100;
-
-      const statusSiswa =
-        sisaSiswa <= 0
-          ? "LUNAS"
-          : efektifSiswa > 0
-            ? "CICILAN"
-            : "BELUM BAYAR";
+      const statusSiswa = dibayarSiswa > 0 ? "CICILAN" : "BELUM BAYAR";
 
       let detailHtml = "";
 
       if (siswa.tagihan && siswa.tagihan.length > 0) {
         siswa.tagihan.forEach(function (t, detailIndex) {
           const nominal = Number(t.nominal_akhir) || 0;
+
           const terbayar = Number(t.terbayar) || 0;
-          const diskon = Number(t.diskon_tambahan_total) || 0;
 
-          const efektif = Math.min(
-            nominal,
-            Math.max(0, terbayar + diskon)
-          );
+          const sisa = Number(t.sisa_tunggakan) || 0;
 
-          const sisa = Math.max(
-            0,
-            nominal - efektif
-          );
+          let progress = Number(t.progress) || 0;
 
-          const progress = nominal > 0
-            ? Math.max(
-                0,
-                Math.min(100, (efektif / nominal) * 100)
-              )
-            : 100;
+          /*
+           * Jika backend belum mengirim progress,
+           * hitung dari nominal dan pembayaran.
+           */
+          if (!progress && nominal > 0) {
+            progress = (terbayar / nominal) * 100;
+          }
+
+          progress = Math.max(0, Math.min(100, progress));
 
           const statusTagihan =
-            sisa <= 0
-              ? "LUNAS"
-              : efektif > 0
-                ? "CICILAN"
-                : "BELUM BAYAR";
+            sisa <= 0 ? "LUNAS" : terbayar > 0 ? "CICILAN" : "BELUM BAYAR";
 
           const namaItem =
             t.nama_item || t.nama_pos || t.nama_item_snapshot || "Tagihan";
