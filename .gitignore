@@ -1,0 +1,13 @@
+# Google Apps Script / clasp
+.claspignore
+.clasp_tokens.json
+
+# Python
+__pycache__/
+*.pyc
+
+# Local backups
+P0_BACKUP_*/
+
+# Local/generated files
+*.log
