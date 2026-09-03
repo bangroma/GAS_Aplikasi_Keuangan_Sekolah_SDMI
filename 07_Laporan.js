@@ -757,3 +757,303 @@ function exportDetailTunggakanToExcel(kelas, idPos) {
     };
   }
 }
+/**
+ * MENU LAPORAN LUNAS
+ * Rekap siswa yang seluruh tagihannya sudah lunas.
+ */
+
+// ============================================================
+// 8. REKAP LUNAS PER KELAS
+// ============================================================
+
+function getRekapLunasPerKelas(idPos) {
+  idPos = normalizeText(idPos).toUpperCase();
+
+  const siswaList = getSheetDataAsObjects("Siswa").filter(function (s) {
+    return normalizeText(s.status_siswa).toUpperCase() === "AKTIF";
+  });
+
+  let tagihanList = getSheetDataAsObjects("Tagihan_Siswa");
+
+  if (idPos && idPos !== "ALL") {
+    tagihanList = tagihanList.filter(function (t) {
+      return normalizeText(t.id_pos) === normalizeText(idPos);
+    });
+  }
+
+  const tagihanBySiswa = {};
+
+  tagihanList.forEach(function (t) {
+    const idSiswa = normalizeText(t.id_siswa);
+
+    if (!idSiswa) return;
+
+    if (!tagihanBySiswa[idSiswa]) {
+      tagihanBySiswa[idSiswa] = [];
+    }
+
+    tagihanBySiswa[idSiswa].push(t);
+  });
+
+  const rekapKelas = {};
+
+  siswaList.forEach(function (siswa) {
+    const idSiswa = normalizeText(siswa.id_siswa);
+    const tagihanSiswa = tagihanBySiswa[idSiswa] || [];
+
+    // Siswa tanpa tagihan bukan LUNAS.
+    if (tagihanSiswa.length === 0) return;
+
+    let totalTagihan = 0;
+    let totalDibayar = 0;
+    let totalDiskon = 0;
+    let totalEfektif = 0;
+    let totalSisa = 0;
+
+    tagihanSiswa.forEach(function (t) {
+      const nominalAkhir = toNumber(t.nominal_akhir);
+      const terbayar = toNumber(t.terbayar);
+      const diskon = toNumber(t.diskon_tambahan_total);
+
+      const efektif = Math.min(
+        nominalAkhir,
+        Math.max(0, terbayar + diskon)
+      );
+
+      const sisa = Math.max(
+        0,
+        nominalAkhir - efektif
+      );
+
+      totalTagihan += nominalAkhir;
+      totalDibayar += terbayar;
+      totalDiskon += diskon;
+      totalEfektif += efektif;
+      totalSisa += sisa;
+    });
+
+    // Siswa LUNAS hanya jika seluruh tagihan sudah tidak memiliki sisa.
+    if (totalSisa > 0) return;
+
+    const kelas = normalizeText(siswa.kelas) || "Tanpa Kelas";
+
+    if (!rekapKelas[kelas]) {
+      rekapKelas[kelas] = {
+        kelas: kelas,
+        total_siswa: 0,
+        siswa_lunas: 0,
+        total_tagihan: 0,
+        total_dibayar: 0,
+        total_diskon: 0,
+        total_pelunasan_efektif: 0,
+      };
+    }
+
+    rekapKelas[kelas].total_siswa++;
+    rekapKelas[kelas].siswa_lunas++;
+    rekapKelas[kelas].total_tagihan += totalTagihan;
+    rekapKelas[kelas].total_dibayar += totalDibayar;
+    rekapKelas[kelas].total_diskon += totalDiskon;
+    rekapKelas[kelas].total_pelunasan_efektif += totalEfektif;
+  });
+
+  return Object.values(rekapKelas).sort(function (a, b) {
+    return a.kelas.localeCompare(b.kelas, undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+  });
+}
+
+// ============================================================
+// 9. GET LIST KELAS UNTUK FILTER LAPORAN LUNAS
+// ============================================================
+
+function getListKelasForLaporanLunas() {
+  const siswaList = getSheetDataAsObjects("Siswa").filter(function (s) {
+    return normalizeText(s.status_siswa).toUpperCase() === "AKTIF";
+  });
+
+  const kelasSet = new Set();
+
+  siswaList.forEach(function (s) {
+    const kelas = normalizeText(s.kelas);
+    if (kelas) {
+      kelasSet.add(kelas);
+    }
+  });
+
+  return Array.from(kelasSet).sort(function (a, b) {
+    return a.localeCompare(b, undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+  });
+}
+
+// ============================================================
+// 10. GET LIST POS UNTUK FILTER LAPORAN LUNAS
+// ============================================================
+
+function getPosListForLaporanLunas() {
+  const posList = getSheetDataAsObjects("Master_Pos");
+
+  return posList
+    .filter(function (p) {
+      return normalizeText(p.aktif).toUpperCase() === "YA";
+    })
+    .map(function (p) {
+      return {
+        id_pos: normalizeText(p.id_pos),
+        kode_pos: normalizeText(p.kode_pos),
+        nama_pos: normalizeText(p.nama_pos),
+      };
+    })
+    .sort(function (a, b) {
+      return a.nama_pos.localeCompare(b.nama_pos, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
+    });
+}
+
+// ============================================================
+// 11. DAFTAR SISWA LUNAS
+// ============================================================
+
+function getSiswaLunasForLaporan(idPos, kelas, keyword) {
+  idPos = normalizeText(idPos).toUpperCase();
+  kelas = normalizeText(kelas);
+  keyword = normalizeText(keyword).toLowerCase();
+
+  const siswaList = getSheetDataAsObjects("Siswa").filter(function (s) {
+    return normalizeText(s.status_siswa).toUpperCase() === "AKTIF";
+  });
+
+  let tagihanList = getSheetDataAsObjects("Tagihan_Siswa");
+
+  if (idPos && idPos !== "ALL") {
+    tagihanList = tagihanList.filter(function (t) {
+      return normalizeText(t.id_pos).toUpperCase() === idPos;
+    });
+  }
+
+  const tagihanBySiswa = {};
+
+  tagihanList.forEach(function (t) {
+    const idSiswa = normalizeText(t.id_siswa);
+
+    if (!idSiswa) return;
+
+    if (!tagihanBySiswa[idSiswa]) {
+      tagihanBySiswa[idSiswa] = [];
+    }
+
+    tagihanBySiswa[idSiswa].push(t);
+  });
+
+  const hasil = [];
+
+  siswaList.forEach(function (siswa) {
+    const idSiswa = normalizeText(siswa.id_siswa);
+    const tagihanSiswa = tagihanBySiswa[idSiswa] || [];
+
+    // Siswa tanpa tagihan bukan LUNAS.
+    if (tagihanSiswa.length === 0) return;
+
+    const nama = normalizeText(siswa.nama_lengkap);
+    const nisn = normalizeText(siswa.nisn);
+    const nis = normalizeText(siswa.nis);
+    const kelasSiswa = normalizeText(siswa.kelas);
+
+    if (kelas && kelas !== "ALL" && kelasSiswa !== kelas) {
+      return;
+    }
+
+    if (keyword) {
+      const teksCari = [
+        nama,
+        nisn,
+        nis,
+        kelasSiswa,
+      ].join(" ").toLowerCase();
+
+      if (teksCari.indexOf(keyword) === -1) {
+        return;
+      }
+    }
+
+    let totalTagihan = 0;
+    let totalDibayar = 0;
+    let totalDiskon = 0;
+    let totalEfektif = 0;
+    let totalSisa = 0;
+
+    const detailTagihan = [];
+
+    tagihanSiswa.forEach(function (t) {
+      const nominalAkhir = toNumber(t.nominal_akhir);
+      const terbayar = toNumber(t.terbayar);
+      const diskon = toNumber(t.diskon_tambahan_total);
+
+      const efektif = Math.min(
+        nominalAkhir,
+        Math.max(0, terbayar + diskon)
+      );
+
+      const sisa = Math.max(
+        0,
+        nominalAkhir - efektif
+      );
+
+      totalTagihan += nominalAkhir;
+      totalDibayar += terbayar;
+      totalDiskon += diskon;
+      totalEfektif += efektif;
+      totalSisa += sisa;
+
+      detailTagihan.push({
+        id_tagihan: normalizeText(t.id_tagihan),
+        id_pos: normalizeText(t.id_pos),
+        nama_item: normalizeText(t.nama_item),
+        periode: normalizeText(t.periode),
+        nominal_akhir: nominalAkhir,
+        terbayar: terbayar,
+        diskon_tambahan_total: diskon,
+        pelunasan_efektif: efektif,
+        sisa_tunggakan: sisa,
+        progress: nominalAkhir > 0
+          ? Math.min(100, (efektif / nominalAkhir) * 100)
+          : 100,
+        status: "LUNAS",
+      });
+    });
+
+    // Seluruh tagihan harus sudah lunas.
+    if (totalSisa > 0) return;
+
+    hasil.push({
+      id_siswa: idSiswa,
+      nisn: nisn,
+      nis: nis,
+      nama_lengkap: nama,
+      kelas: kelasSiswa || "Tanpa Kelas",
+      total_tagihan: totalTagihan,
+      total_dibayar: totalDibayar,
+      total_diskon: totalDiskon,
+      total_pelunasan_efektif: totalEfektif,
+      total_sisa: totalSisa,
+      progress: 100,
+      status: "LUNAS",
+      jumlah_tagihan: tagihanSiswa.length,
+      tagihan: detailTagihan,
+    });
+  });
+
+  return hasil.sort(function (a, b) {
+    return a.nama_lengkap.localeCompare(b.nama_lengkap, undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+  });
+}
