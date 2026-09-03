@@ -1057,3 +1057,115 @@ function getSiswaLunasForLaporan(idPos, kelas, keyword) {
     });
   });
 }
+
+// ============================================================
+// 12. EKSPOR DAFTAR SISWA LUNAS
+// ============================================================
+
+function exportDetailLunasToSheet(idPos, kelas) {
+  try {
+    idPos = normalizeText(idPos).toUpperCase();
+    kelas = normalizeText(kelas);
+
+    const now = new Date();
+    const timezone = Session.getScriptTimeZone() || "Asia/Jakarta";
+    const dateStr = Utilities.formatDate(now, timezone, "yyyyMMdd_HHmmss");
+    const fileName = "Daftar_Siswa_Lunas_" + (kelas || "Semua_Kelas") + "_" + dateStr;
+    const namaPosText = idPos && idPos !== "ALL"
+      ? getNamaPos(idPos)
+      : "Semua Pos Pembayaran";
+
+    const data = getSiswaLunasForLaporan(idPos, kelas, "");
+
+    if (!data || data.length === 0) {
+      throw new Error("Tidak ada siswa lunas untuk diekspor.");
+    }
+
+    const tempSS = SpreadsheetApp.create(fileName);
+    const sheet = tempSS.getActiveSheet();
+    sheet.setName("Daftar Siswa Lunas");
+
+    const lastColumn = 9;
+
+    const titleRange = sheet.getRange(1, 1, 1, lastColumn);
+    titleRange.merge();
+    titleRange.setValue("DAFTAR SISWA LUNAS");
+    titleRange.setFontWeight("bold");
+    titleRange.setFontSize(13);
+    titleRange.setHorizontalAlignment("center");
+
+    const subRange = sheet.getRange(2, 1, 1, lastColumn);
+    subRange.merge();
+    subRange.setValue(
+      "Kelas: " + (kelas || "Semua Kelas") +
+      " | Pos Pembayaran: " + namaPosText
+    );
+    subRange.setFontWeight("bold");
+    subRange.setHorizontalAlignment("center");
+
+    const dateRange = sheet.getRange(3, 1, 1, lastColumn);
+    dateRange.merge();
+    dateRange.setValue(
+      "Tanggal Cetak: " +
+      Utilities.formatDate(now, timezone, "dd MMMM yyyy HH:mm:ss")
+    );
+    dateRange.setFontSize(9);
+    dateRange.setFontStyle("italic");
+    dateRange.setHorizontalAlignment("center");
+
+    const headers = [
+      "No",
+      "NISN",
+      "NIS",
+      "Nama Siswa",
+      "Kelas",
+      "Total Tagihan",
+      "Dibayar",
+      "Diskon",
+      "Pelunasan Efektif",
+    ];
+
+    const rows = data.map(function (siswa, index) {
+      return [
+        index + 1,
+        siswa.nisn,
+        siswa.nis,
+        siswa.nama_lengkap,
+        siswa.kelas,
+        siswa.total_tagihan,
+        siswa.total_dibayar,
+        siswa.total_diskon,
+        siswa.total_pelunasan_efektif,
+      ];
+    });
+
+    const headerRange = sheet.getRange(5, 1, 1, headers.length);
+    headerRange.setValues([headers]);
+    headerRange.setFontWeight("bold");
+    headerRange.setHorizontalAlignment("center");
+
+    sheet.getRange(6, 1, rows.length, headers.length).setValues(rows);
+
+    sheet.getRange(6, 6, rows.length, 4).setNumberFormat("#,##0");
+
+    sheet.getRange(5, 1, rows.length + 1, headers.length)
+      .setBorder(true, true, true, true, true, true);
+
+    sheet.setFrozenRows(5);
+    sheet.autoResizeColumns(1, headers.length);
+
+    return {
+      success: true,
+      message: "Daftar siswa lunas berhasil diekspor.",
+      sheetName: sheet.getName(),
+      spreadsheetUrl: tempSS.getUrl(),
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: err && err.message
+        ? err.message
+        : "Gagal membuat laporan siswa lunas.",
+    };
+  }
+}

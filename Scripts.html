@@ -8,6 +8,9 @@
   let currentModalTunggakanPos = "ALL";
   let currentModalTunggakanData = [];
   let currentDetailSiswaMenunggak = null;
+  let currentModalLunasKelas = null;
+  let currentModalLunasPos = "ALL";
+  let currentModalLunasData = [];
 
 
   /* ========================================================
@@ -1308,7 +1311,15 @@
           html += `
             <tr class="hover:bg-slate-50 transition">
               <td class="p-4 font-bold text-slate-800">${escapeHtml(r.kelas)}</td>
-              <td class="p-4 text-right font-semibold text-emerald-700">${siswaLunas} Siswa</td>
+              <td class="p-4 text-right">
+                <button type="button"
+                  onclick="openModalLunasKelas(decodeURIComponent('${encodeURIComponent(r.kelas)}'), decodeURIComponent('${encodeURIComponent(idPos)}'))"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold transition"
+                  title="Lihat daftar siswa lunas">
+                  <i class="fa-solid fa-users"></i>
+                  ${siswaLunas} Siswa
+                </button>
+              </td>
               <td class="p-4 text-right font-semibold text-slate-700">${formatRupiah(totalTagihanKelas)}</td>
               <td class="p-4 text-right text-slate-700">${formatRupiah(totalDibayarKelas)}</td>
               <td class="p-4 text-right text-amber-600">${formatRupiah(totalDiskonKelas)}</td>
@@ -1347,6 +1358,267 @@
         `;
       })
       .getRekapLunasPerKelas(idPos);
+  }
+
+  /* ========================================================
+   LAPORAN LUNAS - MODAL DAFTAR SISWA
+======================================================== */
+
+  function openModalLunasKelas(kelas, idPos) {
+    const modal = document.getElementById("modal-lunas-kelas");
+    const tbody = document.getElementById("table-modal-lunas-body");
+    const title = document.getElementById("modal-lunas-kelas-title");
+    const subtitle = document.getElementById("modal-lunas-kelas-subtitle");
+    const summary = document.getElementById("modal-lunas-kelas-summary");
+
+    if (!modal || !tbody) {
+      return;
+    }
+
+    currentModalLunasKelas = kelas || null;
+    currentModalLunasPos = idPos || "ALL";
+    currentModalLunasData = [];
+
+    title.innerText = "Daftar Siswa Lunas - Kelas " + (kelas || "");
+    subtitle.innerText = "Memuat daftar siswa...";
+    summary.innerText = "Memuat...";
+
+    tbody.innerHTML = "<tr><td colspan=\"9\" class=\"p-8 text-center text-slate-400\"><i class=\"fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600\"></i><p class=\"text-xs\">Memuat daftar siswa lunas...</p></td></tr>";
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+
+    google.script.run
+      .withSuccessHandler(function (data) {
+        currentModalLunasData = Array.isArray(data) ? data : [];
+        subtitle.innerText = "Kelas " + (kelas || "");
+        summary.innerText = currentModalLunasData.length + " Siswa Lunas";
+
+        if (!currentModalLunasData.length) {
+          tbody.innerHTML = "<tr><td colspan=\"9\" class=\"p-8 text-center text-slate-400\">Tidak ada siswa lunas untuk kelas ini.</td></tr>";
+          return;
+        }
+
+        let html = "";
+
+        currentModalLunasData.forEach(function (siswa, index) {
+          html += "<tr class=\"border-b border-slate-100 hover:bg-slate-50 transition\">";
+          html += "<td class=\"p-3 text-center text-slate-500\">" + (index + 1) + "</td>";
+          html += "<td class=\"p-3 text-left text-slate-700\">" + escapeHtml(siswa.nisn) + "</td>";
+          html += "<td class=\"p-3 text-left text-slate-700\">" + escapeHtml(siswa.nis) + "</td>";
+          html += "<td class=\"p-3 text-left font-semibold text-slate-800\">" + escapeHtml(siswa.nama_lengkap) + "</td>";
+          html += "<td class=\"p-3 text-left text-slate-700\">" + escapeHtml(siswa.kelas) + "</td>";
+          html += "<td class=\"p-3 text-right text-slate-700\">" + formatRupiah(siswa.total_tagihan) + "</td>";
+          html += "<td class=\"p-3 text-right text-slate-700\">" + formatRupiah(siswa.total_dibayar) + "</td>";
+          html += "<td class=\"p-3 text-right text-amber-600\">" + formatRupiah(siswa.total_diskon) + "</td>";
+          html += "<td class=\"p-3 text-right font-bold text-emerald-700\">" + formatRupiah(siswa.total_pelunasan_efektif) + "</td>";
+          html += "</tr>";
+        });
+
+        tbody.innerHTML = html;
+      })
+      .withFailureHandler(function (err) {
+        currentModalLunasData = [];
+        subtitle.innerText = "Gagal memuat data.";
+        summary.innerText = "0 Siswa Lunas";
+        tbody.innerHTML = "<tr><td colspan=\"9\" class=\"p-8 text-center text-rose-500 font-semibold\">Gagal memuat daftar siswa lunas: " + escapeHtml(err && err.message ? err.message : "Terjadi kesalahan.") + "</td></tr>";
+      })
+      .getSiswaLunasForLaporan(currentModalLunasPos, currentModalLunasKelas, "");
+  }
+
+
+  function exportModalLunasExcel() {
+    if (!currentModalLunasKelas) {
+      alert("Kelas laporan belum ditentukan.");
+      return;
+    }
+
+    if (!currentModalLunasData || currentModalLunasData.length === 0) {
+      alert("Tidak ada data siswa lunas yang dapat diekspor.");
+      return;
+    }
+
+    if (typeof XLSX === "undefined") {
+      alert("Library Excel belum tersedia. Silakan muat ulang halaman.");
+      return;
+    }
+
+    const btns = document.querySelectorAll("#modal-lunas-kelas button");
+    let excelButton = null;
+
+    btns.forEach(function (btn) {
+      if (btn.innerText && btn.innerText.toLowerCase().includes("excel")) {
+        excelButton = btn;
+      }
+    });
+
+    const originalHtml = excelButton ? excelButton.innerHTML : "";
+
+    try {
+      if (excelButton) {
+        excelButton.disabled = true;
+        excelButton.innerHTML = `
+          <i class="fa-solid fa-spinner animate-spin"></i>
+          <span>Memproses...</span>
+        `;
+      }
+
+      const now = new Date();
+      const tanggalCetak = now.toLocaleString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+
+      const namaPos = currentModalLunasPos &&
+        currentModalLunasPos.toUpperCase() !== "ALL"
+        ? currentModalLunasPos
+        : "Semua Pos Pembayaran";
+
+      const rows = [
+        ["DAFTAR SISWA LUNAS"],
+        [
+          "Kelas",
+          currentModalLunasKelas || "Semua Kelas",
+          "Pos Pembayaran",
+          namaPos,
+        ],
+        ["Tanggal Cetak", tanggalCetak],
+        [],
+        [
+          "No",
+          "NISN",
+          "NIS",
+          "Nama Siswa",
+          "Kelas",
+          "Total Tagihan",
+          "Dibayar",
+          "Diskon",
+          "Pelunasan Efektif",
+        ],
+      ];
+
+      currentModalLunasData.forEach(function (siswa, index) {
+        rows.push([
+          index + 1,
+          siswa.nisn || "",
+          siswa.nis || "",
+          siswa.nama_lengkap || "",
+          siswa.kelas || "",
+          Number(siswa.total_tagihan) || 0,
+          Number(siswa.total_dibayar) || 0,
+          Number(siswa.total_diskon) || 0,
+          Number(siswa.total_pelunasan_efektif) || 0,
+        ]);
+      });
+
+      const worksheet = XLSX.utils.aoa_to_sheet(rows);
+
+      worksheet["!cols"] = [
+        { wch: 6 },
+        { wch: 18 },
+        { wch: 15 },
+        { wch: 30 },
+        { wch: 12 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 22 },
+      ];
+
+      const lastRow = rows.length - 1;
+
+      if (worksheet["F6"]) {
+        worksheet["F6"].z = "#,##0";
+      }
+
+      for (let row = 6; row <= lastRow; row++) {
+        ["F", "G", "H", "I"].forEach(function (col) {
+          const cell = worksheet[col + row];
+          if (cell) {
+            cell.z = "#,##0";
+          }
+        });
+      }
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Siswa Lunas"
+      );
+
+      const fileName =
+        "Daftar_Siswa_Lunas_" +
+        (currentModalLunasKelas || "Semua_Kelas") +
+        "_" +
+        now.toISOString().slice(0, 10).replace(/-/g, "") +
+        "_" +
+        now.toTimeString().slice(0, 8).replace(/:/g, "") +
+        ".xlsx";
+
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
+      });
+
+      const blob = new Blob(
+        [excelBuffer],
+        {
+          type:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        }
+      );
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      setTimeout(function () {
+        URL.revokeObjectURL(url);
+      }, 1000);
+
+      if (excelButton) {
+        excelButton.disabled = false;
+        excelButton.innerHTML = originalHtml;
+      }
+
+      alert(
+        "File Excel berhasil dibuat dan siap diunduh."
+      );
+    } catch (err) {
+      if (excelButton) {
+        excelButton.disabled = false;
+        excelButton.innerHTML = originalHtml;
+      }
+
+      console.error("Gagal export Laporan Lunas:", err);
+
+      alert(
+        "Gagal membuat file Excel:\n\n" +
+          (err && err.message
+            ? err.message
+            : "Terjadi kesalahan.")
+      );
+    }
+  }
+  function closeModalLunasKelas() {
+    const modal = document.getElementById("modal-lunas-kelas");
+
+    if (!modal) {
+      return;
+    }
+
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
   }
 
   /* ========================================================
