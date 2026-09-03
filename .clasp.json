@@ -1,4 +1,5 @@
 {
   "scriptId": "1MF24Dhy0zr_Rv6S1QYZG7j3Udsc5Wvii-lV18qAMJDK3eE-i3Hb_PIbd",
-  "rootDir": "."
+  "rootDir": ".",
+  "scriptExtensions": [".js"]
 }
