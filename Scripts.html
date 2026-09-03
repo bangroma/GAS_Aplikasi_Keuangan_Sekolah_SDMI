@@ -3,6 +3,7 @@
   let listTagihanSiswa = [];
   let detailTransaksiAktif = null;
   let isFilterPosLoaded = false;
+  let isFilterPosLunasLoaded = false;
   let currentModalTunggakanKelas = null;
   let currentModalTunggakanPos = "ALL";
   let currentModalTunggakanData = [];
@@ -116,6 +117,11 @@
     if (tabName === "laporan") {
       loadOptionsFilterPos();
       loadRekapLaporanJS();
+    }
+
+    if (tabName === "laporan-lunas") {
+      loadOptionsFilterPosLunasJS();
+      loadRekapLaporanLunasJS();
     }
 
     // TAB BARU
@@ -1190,6 +1196,157 @@
       })
 
       .getPosPembayaranList();
+  }
+
+  /* ========================================================
+   LAPORAN LUNAS
+======================================================== */
+
+  function loadOptionsFilterPosLunasJS() {
+    if (isFilterPosLunasLoaded) {
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler(function (listPos) {
+        const select = document.getElementById("filter-pos-lunas");
+
+        if (!select) {
+          return;
+        }
+
+        select.innerHTML = `
+        <option value="ALL">
+          -- Semua Pos Pembayaran --
+        </option>
+      `;
+
+        if (Array.isArray(listPos)) {
+          listPos.forEach(function (p) {
+            const option = document.createElement("option");
+
+            option.value = p.id_pos;
+            option.textContent = p.nama_pos;
+
+            select.appendChild(option);
+          });
+        }
+
+        isFilterPosLunasLoaded = true;
+      })
+      .withFailureHandler(function (err) {
+        console.error("Gagal memuat pos Laporan Lunas:", err);
+      })
+      .getPosListForLaporanLunas();
+
+  }
+
+  /* ========================================================
+   LAPORAN LUNAS - REKAP
+======================================================== */
+
+  function loadRekapLaporanLunasJS() {
+    const idPos = document.getElementById("filter-pos-lunas").value || "ALL";
+    const tbody = document.getElementById("table-rekap-lunas-body");
+
+    if (!tbody) {
+      return;
+    }
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="p-8 text-center text-slate-400">
+          <i class="fa-solid fa-circle-notch animate-spin text-2xl mb-2 text-emerald-600"></i>
+          <p class="text-xs">Memuat rekapitulasi siswa lunas...</p>
+        </td>
+      </tr>
+    `;
+
+    google.script.run
+      .withSuccessHandler(function (data) {
+        data = Array.isArray(data) ? data : [];
+
+        let totalSiswaLunas = 0;
+        let totalTagihan = 0;
+        let totalDibayar = 0;
+        let totalDiskon = 0;
+        let totalEfektif = 0;
+
+        if (!data.length) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="p-8 text-center text-slate-400">
+                Tidak ada data siswa lunas.
+              </td>
+            </tr>
+          `;
+
+          document.getElementById("card-total-lunas").innerText = "0 Siswa";
+          document.getElementById("card-total-tagihan-lunas").innerText = "Rp 0";
+          document.getElementById("card-total-dibayar-lunas").innerText = "Rp 0";
+          document.getElementById("card-total-diskon-lunas").innerText = "Rp 0";
+          document.getElementById("card-total-efektif-lunas").innerText = "Rp 0";
+
+          return;
+        }
+
+        let html = "";
+
+        data.forEach(function (r) {
+          const siswaLunas = Number(r.siswa_lunas) || 0;
+          const totalTagihanKelas = Number(r.total_tagihan) || 0;
+          const totalDibayarKelas = Number(r.total_dibayar) || 0;
+          const totalDiskonKelas = Number(r.total_diskon) || 0;
+          const totalEfektifKelas = Number(r.total_pelunasan_efektif) || 0;
+
+          totalSiswaLunas += siswaLunas;
+          totalTagihan += totalTagihanKelas;
+          totalDibayar += totalDibayarKelas;
+          totalDiskon += totalDiskonKelas;
+          totalEfektif += totalEfektifKelas;
+
+          html += `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="p-4 font-bold text-slate-800">${escapeHtml(r.kelas)}</td>
+              <td class="p-4 text-right font-semibold text-emerald-700">${siswaLunas} Siswa</td>
+              <td class="p-4 text-right font-semibold text-slate-700">${formatRupiah(totalTagihanKelas)}</td>
+              <td class="p-4 text-right text-slate-700">${formatRupiah(totalDibayarKelas)}</td>
+              <td class="p-4 text-right text-amber-600">${formatRupiah(totalDiskonKelas)}</td>
+              <td class="p-4 text-right font-bold text-emerald-700">${formatRupiah(totalEfektifKelas)}</td>
+              <td class="p-4 text-center">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">
+                  <i class="fa-solid fa-circle-check"></i>
+                  LUNAS
+                </span>
+              </td>
+            </tr>
+          `;
+        });
+
+        tbody.innerHTML = html;
+
+        document.getElementById("card-total-lunas").innerText =
+          `${totalSiswaLunas} Siswa`;
+        document.getElementById("card-total-tagihan-lunas").innerText =
+          formatRupiah(totalTagihan);
+        document.getElementById("card-total-dibayar-lunas").innerText =
+          formatRupiah(totalDibayar);
+        document.getElementById("card-total-diskon-lunas").innerText =
+          formatRupiah(totalDiskon);
+        document.getElementById("card-total-efektif-lunas").innerText =
+          formatRupiah(totalEfektif);
+      })
+      .withFailureHandler(function (err) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="p-5 text-center text-rose-500 font-semibold">
+              Gagal memuat laporan lunas:
+              ${escapeHtml(err.message)}
+            </td>
+          </tr>
+        `;
+      })
+      .getRekapLunasPerKelas(idPos);
   }
 
   /* ========================================================
