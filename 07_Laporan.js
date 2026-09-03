@@ -900,7 +900,7 @@ function getPosListForLaporanLunas() {
 
   return posList
     .filter(function (p) {
-      return normalizeText(p.aktif).toUpperCase() === "YA";
+      return p.aktif === undefined || toBoolean(p.aktif);
     })
     .map(function (p) {
       return {
