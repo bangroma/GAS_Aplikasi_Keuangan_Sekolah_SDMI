@@ -1379,7 +1379,7 @@
     currentModalLunasPos = idPos || "ALL";
     currentModalLunasData = [];
 
-    title.innerText = "Daftar Siswa Lunas - Kelas " + (kelas || "");
+    title.innerText = "Daftar Siswa Lunas - " + (kelas || "");
     subtitle.innerText = "Memuat daftar siswa...";
     summary.innerText = "Memuat...";
 
@@ -1391,7 +1391,19 @@
     google.script.run
       .withSuccessHandler(function (data) {
         currentModalLunasData = Array.isArray(data) ? data : [];
-        subtitle.innerText = "Kelas " + (kelas || "");
+        const selectPos = document.getElementById("filter-pos-lunas");
+        let namaPos = "Semua Pos Pembayaran";
+
+        if (selectPos && currentModalLunasPos !== "ALL") {
+          const optionPos = Array.from(selectPos.options).find(function (option) {
+            return option.value === currentModalLunasPos;
+          });
+          if (optionPos) {
+            namaPos = optionPos.textContent.trim();
+          }
+        }
+
+        subtitle.innerText = "Pos: " + namaPos;
         summary.innerText = currentModalLunasData.length + " Siswa Lunas";
 
         if (!currentModalLunasData.length) {
