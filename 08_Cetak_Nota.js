@@ -293,3 +293,55 @@ function simpanLogCetakNota(data) {
     isDuplicate: false,
   };
 }
+/* ============================================================
+   3. AMBIL NOTA UNTUK CETAK ULANG
+============================================================ */
+
+function ambilNotaCetakUlang(noKuitansi) {
+  const target = String(noKuitansi || "").trim();
+
+  if (!target || target === "-") {
+    throw new Error("Nomor kuitansi tidak valid.");
+  }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet =
+    ss.getSheetByName("Cetak_Nota") ||
+    ss.getSheetByName("Cetak Nota");
+
+  if (!sheet) {
+    throw new Error("Sheet 'Cetak_Nota' tidak ditemukan.");
+  }
+
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < 2) {
+    throw new Error("Belum ada arsip nota pada Sheet 'Cetak_Nota'.");
+  }
+
+  const values = sheet.getRange(2, 1, lastRow - 1, 11).getValues();
+
+  for (let i = 0; i < values.length; i++) {
+    const existingNoKuitansi = String(values[i][1] || "").trim();
+
+    if (existingNoKuitansi === target) {
+      const pdfUrl = String(values[i][10] || "").trim();
+
+      if (!pdfUrl) {
+        throw new Error(
+          "Nota ditemukan, tetapi Link File PDF belum tersedia."
+        );
+      }
+
+      return {
+        success: true,
+        no_kuitansi: target,
+        pdfUrl: pdfUrl,
+      };
+    }
+  }
+
+  throw new Error(
+    "Nota dengan nomor kuitansi " + target + " tidak ditemukan di Sheet 'Cetak_Nota'."
+  );
+}

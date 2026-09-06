@@ -915,6 +915,81 @@
    DETAIL TRANSAKSI
 ======================================================== */
 
+
+  /* ========================================================
+     CETAK ULANG NOTA
+  ======================================================== */
+
+  function cetakUlangNotaJS(noKuitansi) {
+    const target = String(noKuitansi || "").trim();
+
+    if (!target || target === "-") {
+      if (typeof Swal !== "undefined") {
+        Swal.fire(
+          "Tidak dapat mencetak ulang",
+          "Nomor kuitansi tidak tersedia.",
+          "warning"
+        );
+      } else {
+        alert("Nomor kuitansi tidak tersedia.");
+      }
+      return;
+    }
+
+    if (typeof Swal !== "undefined") {
+      Swal.fire({
+        title: "Menyiapkan Nota...",
+        text: "Mengambil arsip nota " + target,
+        allowOutsideClick: false,
+        didOpen: function () {
+          Swal.showLoading();
+        },
+      });
+    }
+
+    google.script.run
+      .withSuccessHandler(function (res) {
+        if (typeof Swal !== "undefined") {
+          Swal.close();
+        }
+
+        if (!res || !res.pdfUrl) {
+          if (typeof Swal !== "undefined") {
+            Swal.fire(
+              "Nota Tidak Ditemukan",
+              "Arsip PDF untuk kuitansi " + target + " tidak tersedia.",
+              "error"
+            );
+          } else {
+            alert("Arsip PDF tidak tersedia.");
+          }
+          return;
+        }
+
+        window.open(res.pdfUrl, "_blank");
+      })
+      .withFailureHandler(function (err) {
+        if (typeof Swal !== "undefined") {
+          Swal.close();
+
+          Swal.fire(
+            "Gagal",
+            err && err.message
+              ? err.message
+              : "Gagal mengambil arsip nota.",
+            "error"
+          );
+        } else {
+          alert(
+            err && err.message
+              ? err.message
+              : "Gagal mengambil arsip nota."
+          );
+        }
+      })
+      .ambilNotaCetakUlang(target);
+  }
+
   function lihatDetailTransaksiJS(idTransaksi) {
     document
       .getElementById("modal-detail-transaksi")
