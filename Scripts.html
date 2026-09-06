@@ -6213,7 +6213,6 @@ window.prosesCetakDanSimpanPDF = function() {
       if (typeof Swal !== 'undefined') Swal.close();
       if (res && res.pdfUrl) {
         window.open(res.pdfUrl, '_blank');
-        window.print();
       }
     })
     .withFailureHandler(function(err) {
