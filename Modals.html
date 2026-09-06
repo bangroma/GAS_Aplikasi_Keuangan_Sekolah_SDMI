@@ -242,20 +242,13 @@
 
     <div class="flex gap-2 print:hidden pt-2">
       <button
-        onclick="window.print()"
+        onclick="prosesCetakDanSimpanPDF()"
         class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-sm"
       >
         <i class="fa-solid fa-print"></i>
         Cetak Nota
       </button>
-<!-- Ganti tombol cetak lama di Modals.html -->
-<button
-  onclick="prosesCetakDanSimpanPDF()"
-  class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-sm"
->
-  <i class="fa-solid fa-file-pdf"></i>
-  Cetak & Simpan PDF
-</button>
+
       <button
         onclick="closeModalKuitansi()"
         class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-sm"
