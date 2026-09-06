@@ -877,13 +877,21 @@
           ${formatRupiah(trx.total_bayar)}
         </td>
         <td class="p-4">
-          <div class="flex justify-center">
+          <div class="flex justify-center gap-2">
             <button
               onclick='lihatDetailTransaksiJS(${JSON.stringify(trx.id_transaksi)})'
               title="Lihat Detail"
               class="w-9 h-9 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition"
             >
               <i class="fa-solid fa-eye"></i>
+            </button>
+
+            <button
+              onclick='cetakUlangNotaJS(${JSON.stringify(trx.no_kuitansi)})'
+              title="Cetak Ulang Nota"
+              class="w-9 h-9 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 transition"
+            >
+              <i class="fa-solid fa-print"></i>
             </button>
           </div>
         </td>
