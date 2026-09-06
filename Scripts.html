@@ -1439,6 +1439,269 @@
   }
 
 
+  function printModalLunas() {
+    if (!currentModalLunasData || currentModalLunasData.length === 0) {
+      alert("Tidak ada data siswa lunas yang dapat dicetak.");
+      return;
+    }
+
+    const kelas = currentModalLunasKelas || "Semua Kelas";
+    const tanggal = new Date().toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    let namaPos = "Semua Pos Pembayaran";
+    const selectPos = document.getElementById("filter-pos-lunas");
+
+    if (selectPos && currentModalLunasPos && currentModalLunasPos !== "ALL") {
+      const optionPos = Array.from(selectPos.options).find(function (option) {
+        return option.value === currentModalLunasPos;
+      });
+
+      if (optionPos) {
+        namaPos = optionPos.textContent.trim();
+      }
+    }
+
+    const printWindow = window.open("", "_blank", "width=1200,height=900");
+
+    if (!printWindow) {
+      alert(
+        "Jendela cetak diblokir browser. Silakan izinkan pop-up untuk aplikasi ini."
+      );
+      return;
+    }
+
+    let rowsHtml = "";
+
+    currentModalLunasData.forEach(function (siswa, index) {
+      rowsHtml += `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${escapeHtml(siswa.nisn || "-")}</td>
+          <td>${escapeHtml(siswa.nis || "-")}</td>
+          <td class="nama">${escapeHtml(siswa.nama_lengkap || "-")}</td>
+          <td>${escapeHtml(siswa.kelas || "-")}</td>
+          <td class="nominal">${formatRupiah(siswa.total_tagihan)}</td>
+          <td class="nominal">${formatRupiah(siswa.total_dibayar)}</td>
+          <td class="nominal diskon">${formatRupiah(siswa.total_diskon)}</td>
+          <td class="nominal efektif">${formatRupiah(siswa.total_pelunasan_efektif)}</td>
+        </tr>
+      `;
+    });
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Laporan Siswa Lunas - ${escapeHtml(kelas)}</title>
+        <style>
+          @page {
+            size: A4 landscape;
+            margin: 12mm;
+          }
+
+          * {
+            box-sizing: border-box;
+          }
+
+          body {
+            font-family: Arial, Helvetica, sans-serif;
+            color: #1e293b;
+            margin: 0;
+            font-size: 10px;
+          }
+
+          .header {
+            text-align: center;
+            margin-bottom: 18px;
+          }
+
+          .header h1 {
+            margin: 0 0 5px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+          }
+
+          .header h2 {
+            margin: 0 0 10px;
+            font-size: 13px;
+            font-weight: 600;
+          }
+
+          .info {
+            width: 100%;
+            margin-bottom: 14px;
+            border-collapse: collapse;
+          }
+
+          .info td {
+            padding: 4px 6px;
+            border: 1px solid #cbd5e1;
+          }
+
+          .info .label {
+            width: 110px;
+            font-weight: 700;
+            background: #f1f5f9;
+          }
+
+          .summary {
+            margin-bottom: 12px;
+            font-size: 11px;
+            font-weight: 700;
+          }
+
+          table.data {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+          }
+
+          table.data th,
+          table.data td {
+            border: 1px solid #94a3b8;
+            padding: 5px 4px;
+            vertical-align: middle;
+          }
+
+          table.data th {
+            background: #e2e8f0;
+            color: #0f172a;
+            text-align: center;
+            font-weight: 700;
+          }
+
+          table.data td {
+            text-align: center;
+          }
+
+          table.data td.nama {
+            text-align: left;
+            font-weight: 600;
+          }
+
+          table.data td.nominal {
+            text-align: right;
+            white-space: nowrap;
+          }
+
+          table.data td.diskon {
+            color: #b45309;
+          }
+
+          table.data td.efektif {
+            color: #047857;
+            font-weight: 700;
+          }
+
+          table.data th:nth-child(1) {
+            width: 4%;
+          }
+
+          table.data th:nth-child(2) {
+            width: 10%;
+          }
+
+          table.data th:nth-child(3) {
+            width: 9%;
+          }
+
+          table.data th:nth-child(4) {
+            width: 19%;
+          }
+
+          table.data th:nth-child(5) {
+            width: 9%;
+          }
+
+          table.data th:nth-child(6),
+          table.data th:nth-child(7),
+          table.data th:nth-child(8),
+          table.data th:nth-child(9) {
+            width: 12.25%;
+          }
+
+          .footer {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 9px;
+            color: #64748b;
+          }
+
+          @media print {
+            .no-print {
+              display: none !important;
+            }
+          }
+        </style>
+      </head>
+
+      <body>
+        <div class="header">
+          <h1>DAFTAR SISWA LUNAS</h1>
+          <h2>Sistem Keuangan MI Muhammadiyah Kertonatan</h2>
+        </div>
+
+        <table class="info">
+          <tr>
+            <td class="label">Kelas</td>
+            <td>${escapeHtml(kelas)}</td>
+            <td class="label">Pos Pembayaran</td>
+            <td>${escapeHtml(namaPos)}</td>
+          </tr>
+          <tr>
+            <td class="label">Tanggal Cetak</td>
+            <td colspan="3">${escapeHtml(tanggal)}</td>
+          </tr>
+        </table>
+
+        <div class="summary">
+          Jumlah Siswa Lunas: ${currentModalLunasData.length} Siswa
+        </div>
+
+        <table class="data">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>NISN</th>
+              <th>NIS</th>
+              <th>Nama Siswa</th>
+              <th>Kelas</th>
+              <th>Total Tagihan</th>
+              <th>Dibayar</th>
+              <th>Diskon</th>
+              <th>Pelunasan Efektif</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          Sistem Keuangan MI Muhammadiyah Kertonatan<br>
+          Laporan Siswa Lunas
+        </div>
+      </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+
+    printWindow.onload = function () {
+      setTimeout(function () {
+        printWindow.print();
+      }, 300);
+    };
+  }
+
   function exportModalLunasExcel() {
     if (!currentModalLunasKelas) {
       alert("Kelas laporan belum ditentukan.");
