@@ -1,4 +1,74 @@
 <script>
+  function toggleMobileSidebar() {
+    const sidebar = document.getElementById("app-sidebar");
+    const overlay = document.getElementById("mobile-overlay");
+    const button = document.querySelector(
+      '[aria-controls="app-sidebar"][aria-expanded]'
+    );
+
+    if (!sidebar || !overlay) return;
+
+    const isOpen = !sidebar.classList.contains("-translate-x-full");
+
+    if (isOpen) {
+      closeMobileSidebar();
+    } else {
+      sidebar.classList.remove("-translate-x-full");
+      overlay.classList.remove("hidden");
+
+      if (button) {
+        button.setAttribute("aria-expanded", "true");
+      }
+    }
+  }
+
+  function closeMobileSidebar() {
+    const sidebar = document.getElementById("app-sidebar");
+    const overlay = document.getElementById("mobile-overlay");
+    const button = document.querySelector(
+      '[aria-controls="app-sidebar"][aria-expanded]'
+    );
+
+    if (!sidebar || !overlay) return;
+
+    sidebar.classList.add("-translate-x-full");
+    overlay.classList.add("hidden");
+
+    if (button) {
+      button.setAttribute("aria-expanded", "false");
+    }
+  }
+
+  function closeMobileSidebarOnDesktop() {
+    if (window.innerWidth >= 768) {
+      const sidebar = document.getElementById("app-sidebar");
+      const overlay = document.getElementById("mobile-overlay");
+      const button = document.querySelector(
+        '[aria-controls="app-sidebar"][aria-expanded]'
+      );
+
+      if (sidebar) {
+        sidebar.classList.remove("-translate-x-full");
+      }
+
+      if (overlay) {
+        overlay.classList.add("hidden");
+      }
+
+      if (button) {
+        button.setAttribute("aria-expanded", "false");
+      }
+    }
+  }
+
+  window.addEventListener("resize", closeMobileSidebarOnDesktop);
+
+  window.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      closeMobileSidebar();
+    }
+  });
+
   let selectedSiswa = null;
   let listTagihanSiswa = [];
   let detailTransaksiAktif = null;
@@ -111,6 +181,11 @@
     if (nav) {
       nav.classList.add("bg-emerald-600", "text-white", "font-semibold");
       nav.classList.remove("hover:bg-slate-700", "text-slate-300");
+    }
+
+    // Tutup sidebar otomatis setelah memilih menu pada perangkat mobile.
+    if (window.innerWidth < 768) {
+      closeMobileSidebar();
     }
 
     if (tabName === "riwayat") {
