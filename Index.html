@@ -24,8 +24,10 @@
         onclick="closeMobileSidebar()"
       ></div>
 
-      <main class="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-        <div class="mb-4 flex items-center md:hidden">
+      <main class="min-w-0 flex-1 overflow-y-auto px-4 pb-4 pt-20 sm:px-6 sm:pb-6 sm:pt-20 lg:p-8">
+        <header
+          class="fixed inset-x-0 top-0 z-50 flex h-16 items-center border-b border-slate-200 bg-white/95 px-4 shadow-sm backdrop-blur md:hidden"
+        >
           <button
             type="button"
             onclick="toggleMobileSidebar()"
@@ -37,10 +39,10 @@
             <i class="fa-solid fa-bars text-lg"></i>
           </button>
 
-          <div class="ml-3 text-sm font-semibold text-slate-700">
+          <div class="ml-3 truncate text-sm font-semibold text-slate-700">
             MI MPK Kertonatan
           </div>
-        </div>
+        </header>
         <?!= include('ViewDashboard'); ?> <?!= include('ViewPembayaran'); ?>
         <?!= include('ViewRiwayat'); ?> <?!= include('ViewSiswa'); ?> <?!=
         include('ViewSettingTagihan'); ?>
