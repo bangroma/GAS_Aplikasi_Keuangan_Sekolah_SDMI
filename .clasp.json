@@ -1,5 +1,16 @@
 {
-  "scriptId": "1MF24Dhy0zr_Rv6S1QYZG7j3Udsc5Wvii-lV18qAMJDK3eE-i3Hb_PIbd",
-  "rootDir": ".",
-  "scriptExtensions": [".js"]
+  "scriptId": "1yGYfcmBhHdXVNkF_tUzjpo5yICtiZ2jLd_YRM80ZoCVcvgtkGfqjo41x",
+  "rootDir": "",
+  "projectId": "rising-guide-507906-v1",
+  "scriptExtensions": [
+    ".js"
+  ],
+  "htmlExtensions": [
+    ".html"
+  ],
+  "jsonExtensions": [
+    ".json"
+  ],
+  "filePushOrder": [],
+  "skipSubdirectories": false
 }

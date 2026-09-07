@@ -468,6 +468,743 @@ function generateTagihanMassal(payload) {
 // 3. RIWAYAT GENERATE TAGIHAN
 // ============================================================
 
+
+// ===== STAGE 2: SALIN SETTING ANTAR TAHUN =====
+
+function previewSalinSettingAntarTahun(tahunSumber, tahunTujuan) {
+  const sourceYear = String(tahunSumber || "").trim();
+  const targetYear = String(tahunTujuan || "").trim();
+
+  if (!sourceYear || !targetYear) {
+    throw new Error("Tahun sumber dan tahun tujuan wajib diisi.");
+  }
+
+  if (sourceYear === targetYear) {
+    throw new Error("Tahun sumber dan tahun tujuan tidak boleh sama.");
+  }
+
+  const siswaSheet = SpreadsheetApp.getActive().getSheetByName("Siswa");
+  const posSheet = SpreadsheetApp.getActive().getSheetByName("Master_Pos");
+  const potonganSheet = SpreadsheetApp.getActive().getSheetByName("Master_Potongan");
+  const tagihanSheet = SpreadsheetApp.getActive().getSheetByName("Tagihan_Siswa");
+
+  if (!siswaSheet || !posSheet || !tagihanSheet) {
+    throw new Error("Sheet wajib tidak ditemukan.");
+  }
+
+  const siswaData = getStage2Objects_(siswaSheet);
+  const posData = getStage2Objects_(posSheet);
+  const tagihanData = getStage2Objects_(tagihanSheet);
+  const potonganData = potonganSheet
+    ? getStage2Objects_(potonganSheet)
+    : [];
+
+  const siswaSourceMap = {};
+  const siswaTargetByKelas = {};
+
+  siswaData.forEach(function(siswa) {
+    const id = String(siswa.id_siswa || "").trim();
+    const tahun = String(siswa.tahun_pelajaran || "").trim();
+    const kelas = String(siswa.kelas || "").trim();
+
+    if (!id || !tahun) return;
+
+    siswaSourceMap[tahun + "|" + id] = siswa;
+
+    if (
+      tahun === targetYear &&
+      String(siswa.status_siswa || "").trim().toUpperCase() === "AKTIF" &&
+      kelas
+    ) {
+      if (!siswaTargetByKelas[kelas]) {
+        siswaTargetByKelas[kelas] = [];
+      }
+      siswaTargetByKelas[kelas].push(siswa);
+    }
+  });
+
+  const posMap = {};
+  posData.forEach(function(pos) {
+    const id = String(pos.id_pos || "").trim();
+    if (id) posMap[id] = pos;
+  });
+
+  const potonganMap = {};
+  potonganData.forEach(function(potongan) {
+    const id = String(potongan.id_potongan || "").trim();
+    if (id) potonganMap[id] = potongan;
+  });
+
+  const existingTarget = {};
+  tagihanData.forEach(function(tagihan) {
+    const tahun = String(tagihan.tahun_pelajaran || "").trim();
+    const idSiswa = String(tagihan.id_siswa || "").trim();
+    const idPos = String(tagihan.id_pos || "").trim();
+    const periode = String(tagihan.periode || "").trim();
+
+    if (
+      tahun === targetYear &&
+      idSiswa &&
+      idPos &&
+      periode
+    ) {
+      existingTarget[
+        targetYear + "|" + idSiswa + "|" + idPos + "|" + periode
+      ] = true;
+    }
+  });
+
+  const patternMap = {};
+  const invalidPatterns = [];
+
+  tagihanData.forEach(function(tagihan) {
+    const idSiswa = String(tagihan.id_siswa || "").trim();
+    const tahun = String(tagihan.tahun_pelajaran || "").trim();
+    const idPos = String(tagihan.id_pos || "").trim();
+    const periode = String(tagihan.periode || "").trim();
+
+    if (!idSiswa || tahun !== sourceYear || !idPos || !periode) {
+      return;
+    }
+
+    const siswa = siswaSourceMap[sourceYear + "|" + idSiswa];
+
+    if (!siswa) {
+      return;
+    }
+
+    const kelas = String(siswa.kelas || "").trim();
+
+    if (!kelas) {
+      return;
+    }
+
+    const key = kelas + "|" + idPos + "|" + periode;
+
+    const config = {
+      kelas: kelas,
+      id_pos: idPos,
+      periode: periode,
+      id_potongan: String(tagihan.id_potongan || "").trim(),
+      nominal_asal: Number(tagihan.nominal_asal || 0),
+      bisa_dicicil: tagihan.bisa_dicicil,
+      keterangan: tagihan.keterangan || ""
+    };
+
+    if (!patternMap[key]) {
+      patternMap[key] = {
+        key: key,
+        kelas: kelas,
+        id_pos: idPos,
+        periode: periode,
+        variants: [],
+        representative: config
+      };
+    }
+
+    const pattern = patternMap[key];
+
+    const sameVariant = pattern.variants.some(function(v) {
+      return (
+        v.id_potongan === config.id_potongan &&
+        v.nominal_asal === config.nominal_asal &&
+        String(v.bisa_dicicil) === String(config.bisa_dicicil)
+      );
+    });
+
+    if (!sameVariant) {
+      pattern.variants.push(config);
+    }
+  });
+
+  Object.keys(patternMap).forEach(function(key) {
+    const pattern = patternMap[key];
+
+    if (pattern.variants.length === 0) {
+      pattern.variants.push(pattern.representative);
+    }
+
+    if (pattern.variants.length > 1) {
+      invalidPatterns.push({
+        kelas: pattern.kelas,
+        id_pos: pattern.id_pos,
+        periode: pattern.periode,
+        jumlah_varian: pattern.variants.length,
+        message:
+          "Pola memiliki lebih dari satu konfigurasi potongan/tarif. " +
+          "Tidak aman untuk disalin otomatis."
+      });
+    }
+  });
+
+  const detailMap = {};
+
+  Object.keys(patternMap).forEach(function(key) {
+    const pattern = patternMap[key];
+
+    if (!detailMap[pattern.kelas]) {
+      detailMap[pattern.kelas] = {
+        kelas: pattern.kelas,
+        jumlah_pola: 0,
+        jumlah_siswa: (siswaTargetByKelas[pattern.kelas] || []).length,
+        calon_tagihan: 0,
+        sudah_ada: 0,
+        akan_dibuat: 0
+      };
+    }
+
+    detailMap[pattern.kelas].jumlah_pola++;
+  });
+
+  Object.keys(patternMap).forEach(function(key) {
+    const pattern = patternMap[key];
+    const siswaTujuan = siswaTargetByKelas[pattern.kelas] || [];
+    const detail = detailMap[pattern.kelas];
+
+    detail.calon_tagihan += siswaTujuan.length;
+
+    siswaTujuan.forEach(function(siswa) {
+      const duplicateKey =
+        targetYear +
+        "|" +
+        String(siswa.id_siswa || "").trim() +
+        "|" +
+        pattern.id_pos +
+        "|" +
+        pattern.periode;
+
+      if (existingTarget[duplicateKey]) {
+        detail.sudah_ada++;
+      } else {
+        detail.akan_dibuat++;
+      }
+    });
+  });
+
+  const detailKelas = Object.keys(detailMap)
+    .sort()
+    .map(function(kelas) {
+      return detailMap[kelas];
+    });
+
+  const jumlahSiswaTujuan = Object.keys(siswaTargetByKelas)
+    .reduce(function(total, kelas) {
+      return total + siswaTargetByKelas[kelas].length;
+    }, 0);
+
+  const jumlahCalonTagihan = detailKelas.reduce(function(total, item) {
+    return total + item.calon_tagihan;
+  }, 0);
+
+  const jumlahSudahAda = detailKelas.reduce(function(total, item) {
+    return total + item.sudah_ada;
+  }, 0);
+
+  const jumlahAkanDibuat = detailKelas.reduce(function(total, item) {
+    return total + item.akan_dibuat;
+  }, 0);
+
+  const kelasSumber = {};
+  Object.keys(patternMap).forEach(function(key) {
+    kelasSumber[patternMap[key].kelas] = true;
+  });
+
+  const kelasTanpaSiswa = Object.keys(kelasSumber)
+    .filter(function(kelas) {
+      return !siswaTargetByKelas[kelas] ||
+        siswaTargetByKelas[kelas].length === 0;
+    })
+    .sort();
+
+  const polaSetting = Object.keys(patternMap)
+    .sort()
+    .map(function(key) {
+      const pattern = patternMap[key];
+      const pos = posMap[pattern.id_pos];
+
+      return {
+        kelas: pattern.kelas,
+        id_pos: pattern.id_pos,
+        nama_pos: pos ? pos.nama_pos : "",
+        periode: pattern.periode,
+        jumlah_varian: pattern.variants.length,
+        aman_disalin: pattern.variants.length === 1
+      };
+    });
+
+  return {
+    success: true,
+    tahun_sumber: sourceYear,
+    tahun_tujuan: targetYear,
+    jumlah_kelas_sumber: Object.keys(kelasSumber).length,
+    jumlah_pola_setting: Object.keys(patternMap).length,
+    jumlah_siswa_tujuan: jumlahSiswaTujuan,
+    jumlah_calon_tagihan: jumlahCalonTagihan,
+    jumlah_sudah_ada: jumlahSudahAda,
+    jumlah_akan_dibuat: jumlahAkanDibuat,
+    kelas_tanpa_siswa: kelasTanpaSiswa,
+    detail_kelas: detailKelas,
+    pola_setting: polaSetting,
+    pola_ambigu: invalidPatterns
+  };
+}
+
+
+function salinSettingAntarTahun(payload) {
+  const lock = LockService.getScriptLock();
+
+  try {
+    lock.waitLock(30000);
+
+    payload = payload || {};
+
+    const sourceYear = String(payload.tahun_sumber || "").trim();
+    const targetYear = String(payload.tahun_tujuan || "").trim();
+
+    if (!sourceYear || !targetYear) {
+      throw new Error("Tahun sumber dan tahun tujuan wajib diisi.");
+    }
+
+    if (sourceYear === targetYear) {
+      throw new Error("Tahun sumber dan tahun tujuan tidak boleh sama.");
+    }
+
+    const siswaSheet = SpreadsheetApp.getActive().getSheetByName("Siswa");
+    const posSheet = SpreadsheetApp.getActive().getSheetByName("Master_Pos");
+    const potonganSheet =
+      SpreadsheetApp.getActive().getSheetByName("Master_Potongan");
+    const tagihanSheet =
+      SpreadsheetApp.getActive().getSheetByName("Tagihan_Siswa");
+
+    if (!siswaSheet || !posSheet || !tagihanSheet) {
+      throw new Error("Sheet wajib tidak ditemukan.");
+    }
+
+    const siswaData = getStage2Objects_(siswaSheet);
+    const posData = getStage2Objects_(posSheet);
+    const tagihanData = getStage2Objects_(tagihanSheet);
+    const potonganData = potonganSheet
+      ? getStage2Objects_(potonganSheet)
+      : [];
+
+    const siswaSourceMap = {};
+    const siswaTargetByKelas = {};
+
+    siswaData.forEach(function(siswa) {
+      const id = String(siswa.id_siswa || "").trim();
+      const tahun = String(siswa.tahun_pelajaran || "").trim();
+      const kelas = String(siswa.kelas || "").trim();
+
+      if (!id || !tahun) return;
+
+      siswaSourceMap[tahun + "|" + id] = siswa;
+
+      if (
+        tahun === targetYear &&
+        String(siswa.status_siswa || "").trim().toUpperCase() === "AKTIF" &&
+        kelas
+      ) {
+        if (!siswaTargetByKelas[kelas]) {
+          siswaTargetByKelas[kelas] = [];
+        }
+        siswaTargetByKelas[kelas].push(siswa);
+      }
+    });
+
+    const posMap = {};
+    posData.forEach(function(pos) {
+      const id = String(pos.id_pos || "").trim();
+      if (id) posMap[id] = pos;
+    });
+
+    const potonganMap = {};
+    potonganData.forEach(function(potongan) {
+      const id = String(potongan.id_potongan || "").trim();
+      if (id) potonganMap[id] = potongan;
+    });
+
+    const header = tagihanSheet
+      .getRange(1, 1, 1, tagihanSheet.getLastColumn())
+      .getValues()[0];
+
+    const h = {};
+    header.forEach(function(name, index) {
+      h[String(name).trim()] = index;
+    });
+
+    const requiredColumns = [
+      "id_tagihan",
+      "id_siswa",
+      "id_pos",
+      "id_potongan",
+      "tahun_pelajaran",
+      "periode",
+      "nama_item_snapshot",
+      "nominal_asal",
+      "terbayar",
+      "sisa_tunggakan",
+      "bisa_dicicil",
+      "tanggal_tagihan",
+      "keterangan",
+      "nominal_potongan",
+      "nominal_akhir",
+      "diskon_tambahan_total",
+      "status"
+    ];
+
+    const missing = requiredColumns.filter(function(name) {
+      return h[name] === undefined;
+    });
+
+    if (missing.length) {
+      throw new Error(
+        "Kolom Tagihan_Siswa belum lengkap: " + missing.join(", ")
+      );
+    }
+
+    const existingTarget = {};
+
+    tagihanData.forEach(function(tagihan) {
+      const tahun = String(tagihan.tahun_pelajaran || "").trim();
+      const idSiswa = String(tagihan.id_siswa || "").trim();
+      const idPos = String(tagihan.id_pos || "").trim();
+      const periode = String(tagihan.periode || "").trim();
+
+      if (
+        tahun === targetYear &&
+        idSiswa &&
+        idPos &&
+        periode
+      ) {
+        existingTarget[
+          targetYear + "|" + idSiswa + "|" + idPos + "|" + periode
+        ] = true;
+      }
+    });
+
+    const patternMap = {};
+    const ambiguous = [];
+
+    tagihanData.forEach(function(tagihan) {
+      const idSiswa = String(tagihan.id_siswa || "").trim();
+      const tahun = String(tagihan.tahun_pelajaran || "").trim();
+      const idPos = String(tagihan.id_pos || "").trim();
+      const periode = String(tagihan.periode || "").trim();
+
+      if (!idSiswa || tahun !== sourceYear || !idPos || !periode) {
+        return;
+      }
+
+      const siswa = siswaSourceMap[sourceYear + "|" + idSiswa];
+
+      if (!siswa) return;
+
+      const kelas = String(siswa.kelas || "").trim();
+
+      if (!kelas) return;
+
+      const key = kelas + "|" + idPos + "|" + periode;
+
+      const config = {
+        kelas: kelas,
+        id_pos: idPos,
+        periode: periode,
+        id_potongan: String(tagihan.id_potongan || "").trim(),
+        nominal_asal: Number(tagihan.nominal_asal || 0),
+        bisa_dicicil: tagihan.bisa_dicicil,
+        keterangan: tagihan.keterangan || ""
+      };
+
+      if (!patternMap[key]) {
+        patternMap[key] = {
+          key: key,
+          kelas: kelas,
+          id_pos: idPos,
+          periode: periode,
+          variants: []
+        };
+      }
+
+      const sameVariant = patternMap[key].variants.some(function(v) {
+        return (
+          v.id_potongan === config.id_potongan &&
+          v.nominal_asal === config.nominal_asal &&
+          String(v.bisa_dicicil) === String(config.bisa_dicicil)
+        );
+      });
+
+      if (!sameVariant) {
+        patternMap[key].variants.push(config);
+      }
+    });
+
+    Object.keys(patternMap).forEach(function(key) {
+      const pattern = patternMap[key];
+
+      if (pattern.variants.length !== 1) {
+        ambiguous.push({
+          kelas: pattern.kelas,
+          id_pos: pattern.id_pos,
+          periode: pattern.periode,
+          jumlah_varian: pattern.variants.length
+        });
+      }
+    });
+
+    if (ambiguous.length) {
+      throw new Error(
+        "Penyalinan dibatalkan karena ditemukan " +
+        ambiguous.length +
+        " pola dengan konfigurasi berbeda dalam kelas+pos+periode. " +
+        "Periksa preview terlebih dahulu."
+      );
+    }
+
+    if (!Object.keys(patternMap).length) {
+      throw new Error(
+        "Tidak ditemukan pola setting pada tahun sumber."
+      );
+    }
+
+    if (!Object.keys(siswaTargetByKelas).length) {
+      throw new Error(
+        "Tidak ditemukan siswa AKTIF pada tahun tujuan."
+      );
+    }
+
+    const now = new Date();
+    const timezone =
+      Session.getScriptTimeZone() || "Asia/Jakarta";
+
+    const prefix =
+      "TAG-" +
+      Utilities.formatDate(now, timezone, "yyyyMM") +
+      "-";
+
+    let maxSequence = 0;
+
+    tagihanData.forEach(function(tagihan) {
+      const id = String(tagihan.id_tagihan || "").trim();
+
+      if (id.indexOf(prefix) === 0) {
+        const match = id.match(/(\d+)$/);
+
+        if (match) {
+          maxSequence = Math.max(
+            maxSequence,
+            Number(match[1])
+          );
+        }
+      }
+    });
+
+    const newRows = [];
+    let skipped = 0;
+
+    Object.keys(patternMap).sort().forEach(function(key) {
+      const pattern = patternMap[key];
+      const config = pattern.variants[0];
+      const siswaTujuan =
+        siswaTargetByKelas[pattern.kelas] || [];
+
+      const pos = posMap[pattern.id_pos];
+
+      if (!pos) {
+        throw new Error(
+          "Master_Pos tidak ditemukan untuk id_pos: " +
+          pattern.id_pos
+        );
+      }
+
+      const idPotongan = config.id_potongan;
+      const nominalAsal = Number(config.nominal_asal || 0);
+
+      if (nominalAsal < 0) {
+        throw new Error(
+          "Nominal asal tidak valid pada pola " +
+          pattern.kelas +
+          " / " +
+          pattern.id_pos +
+          " / " +
+          pattern.periode
+        );
+      }
+
+      let nominalPotongan = 0;
+
+      if (idPotongan) {
+        const potongan = potonganMap[idPotongan];
+
+        if (!potongan) {
+          throw new Error(
+            "Master_Potongan tidak ditemukan untuk id_potongan: " +
+            idPotongan
+          );
+        }
+
+        const tipe = String(
+          potongan.tipe_nilai || ""
+        ).trim().toUpperCase();
+
+        const nilai = Number(
+          potongan.nilai_potongan || 0
+        );
+
+        if (tipe === "PERSEN") {
+          nominalPotongan =
+            nominalAsal * nilai / 100;
+        } else {
+          nominalPotongan = nilai;
+        }
+
+        nominalPotongan = Math.max(
+          0,
+          Math.min(nominalPotongan, nominalAsal)
+        );
+      }
+
+      const nominalAkhir = Math.max(
+        0,
+        nominalAsal - nominalPotongan
+      );
+
+      siswaTujuan.forEach(function(siswa) {
+        const idSiswa = String(
+          siswa.id_siswa || ""
+        ).trim();
+
+        const duplicateKey =
+          targetYear +
+          "|" +
+          idSiswa +
+          "|" +
+          pattern.id_pos +
+          "|" +
+          pattern.periode;
+
+        if (existingTarget[duplicateKey]) {
+          skipped++;
+          return;
+        }
+
+        maxSequence++;
+
+        const idTagihan =
+          prefix +
+          String(maxSequence).padStart(4, "0");
+
+        const row = new Array(header.length)
+          .fill("");
+
+        row[h.id_tagihan] = idTagihan;
+        row[h.id_siswa] = idSiswa;
+        row[h.id_pos] = pattern.id_pos;
+        row[h.id_potongan] = idPotongan;
+        row[h.tahun_pelajaran] = targetYear;
+        row[h.periode] = pattern.periode;
+
+        row[h.nama_item_snapshot] =
+          String(pos.nama_pos || "").trim() +
+          " (" +
+          pattern.periode +
+          ")";
+
+        row[h.nominal_asal] = nominalAsal;
+        row[h.terbayar] = 0;
+        row[h.sisa_tunggakan] = nominalAkhir;
+
+        row[h.bisa_dicicil] =
+          config.bisa_dicicil !== undefined
+            ? config.bisa_dicicil
+            : pos.bisa_dicicil;
+
+        row[h.tanggal_tagihan] = now;
+        row[h.keterangan] = config.keterangan || "";
+
+        row[h.nominal_potongan] =
+          nominalPotongan;
+
+        row[h.nominal_akhir] =
+          nominalAkhir;
+
+        row[h.diskon_tambahan_total] = 0;
+
+        row[h.status] =
+          nominalAkhir <= 0
+            ? "LUNAS"
+            : "BELUM_BAYAR";
+
+        if (h.status_siswa !== undefined) {
+          row[h.status_siswa] =
+            siswa.status_siswa || "AKTIF";
+        }
+
+        newRows.push(row);
+
+        existingTarget[duplicateKey] = true;
+      });
+    });
+
+    if (newRows.length) {
+      const startRow = tagihanSheet.getLastRow() + 1;
+
+      tagihanSheet
+        .getRange(
+          startRow,
+          1,
+          newRows.length,
+          header.length
+        )
+        .setValues(newRows);
+    }
+
+    return {
+      success: true,
+      tahun_sumber: sourceYear,
+      tahun_tujuan: targetYear,
+      jumlah_pola: Object.keys(patternMap).length,
+      jumlah_dibuat: newRows.length,
+      jumlah_dilewati: skipped,
+      message:
+        "Penyalinan setting berhasil. " +
+        newRows.length +
+        " tagihan dibuat, " +
+        skipped +
+        " tagihan dilewati karena sudah ada."
+    };
+
+  } finally {
+    try {
+      lock.releaseLock();
+    } catch (e) {}
+  }
+}
+
+
+function getStage2Objects_(sheet) {
+  const values = sheet.getDataRange().getValues();
+
+  if (!values || values.length < 2) {
+    return [];
+  }
+
+  const header = values[0].map(function(name) {
+    return String(name).trim();
+  });
+
+  return values.slice(1).map(function(row) {
+    const obj = {};
+
+    header.forEach(function(name, index) {
+      obj[name] = row[index];
+    });
+
+    return obj;
+  });
+}
+
+// ===== END STAGE 2: SALIN SETTING ANTAR TAHUN =====
+
 function getRiwayatGenerateTagihan(page, limit) {
   try {
     page = Math.max(1, parseInt(page, 10) || 1);
@@ -1933,3 +2670,107 @@ function getPosForTagihanFilter() {
 }
 
 
+
+
+// ===== TEST WRAPPER STAGE 2 =====
+function testPreviewSalinSettingAntarTahun() {
+  const hasil = previewSalinSettingAntarTahun(
+    "2026/2027",
+    "2027/2028"
+  );
+
+  Logger.log(JSON.stringify(hasil, null, 2));
+}
+// ===== END TEST WRAPPER STAGE 2 =====
+
+function testCekSiswaTahunTujuan() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName("Siswa");
+  if (!sh) throw new Error("Sheet Siswa tidak ditemukan.");
+
+  const values = sh.getDataRange().getValues();
+  const headers = values.shift();
+
+  const idxTahun = headers.indexOf("tahun_pelajaran");
+  const idxStatus = headers.indexOf("status_siswa");
+  const idxKelas = headers.indexOf("kelas");
+  const idxNama = headers.indexOf("nama_lengkap");
+
+  if (idxTahun < 0 || idxStatus < 0 || idxKelas < 0 || idxNama < 0) {
+    throw new Error(
+      "Kolom wajib tidak lengkap. Headers: " + JSON.stringify(headers)
+    );
+  }
+
+  const hasil = values
+    .filter(r => String(r[idxTahun]).trim() === "2027/2028")
+    .map(r => ({
+      nama: r[idxNama],
+      kelas: r[idxKelas],
+      status: r[idxStatus],
+      tahun: r[idxTahun]
+    }));
+
+  Logger.log(JSON.stringify({
+    jumlah: hasil.length,
+    siswa: hasil
+  }, null, 2));
+}
+
+function testAuditStatistikSiswa() {
+  const siswa = getSheetDataAsObjects("Siswa");
+
+  const statistik = {
+    total: siswa.length,
+    per_tahun: {},
+    per_tahun_status: {},
+    per_tahun_kelas: {},
+    duplikat_id: []
+  };
+
+  const idMap = {};
+
+  siswa.forEach(function(s) {
+    const id = normalizeText(s.id_siswa);
+    const tahun = normalizeText(s.tahun_pelajaran) || "(kosong)";
+    const status = normalizeText(s.status_siswa).toUpperCase() || "(kosong)";
+    const kelas = normalizeText(s.kelas) || "(kosong)";
+
+    if (id) {
+      if (!idMap[id]) idMap[id] = 0;
+      idMap[id]++;
+    }
+
+    if (!statistik.per_tahun[tahun]) {
+      statistik.per_tahun[tahun] = 0;
+    }
+    statistik.per_tahun[tahun]++;
+
+    if (!statistik.per_tahun_status[tahun]) {
+      statistik.per_tahun_status[tahun] = {};
+    }
+    if (!statistik.per_tahun_status[tahun][status]) {
+      statistik.per_tahun_status[tahun][status] = 0;
+    }
+    statistik.per_tahun_status[tahun][status]++;
+
+    if (!statistik.per_tahun_kelas[tahun]) {
+      statistik.per_tahun_kelas[tahun] = {};
+    }
+    if (!statistik.per_tahun_kelas[tahun][kelas]) {
+      statistik.per_tahun_kelas[tahun][kelas] = 0;
+    }
+    statistik.per_tahun_kelas[tahun][kelas]++;
+  });
+
+  Object.keys(idMap).forEach(function(id) {
+    if (idMap[id] > 1) {
+      statistik.duplikat_id.push({
+        id_siswa: id,
+        jumlah: idMap[id]
+      });
+    }
+  });
+
+  Logger.log(JSON.stringify(statistik, null, 2));
+}
