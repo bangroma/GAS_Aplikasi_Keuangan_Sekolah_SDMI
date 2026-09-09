@@ -18,6 +18,23 @@
         Pengaturan Tagihan
       </h3>
 
+      <!-- STAGE2_TAHUN_PELAJARAN_UI -->
+      <!-- Tahun Pelajaran -->
+      <div>
+        <label class="text-xs font-semibold text-slate-600">Tahun Pelajaran </label>
+        <select
+          id="setting-tahun-pelajaran"
+          onchange="filterSiswaByTahunPelajaranJS()"
+          disabled
+          class="w-full mt-1 p-2.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none disabled:bg-slate-100 disabled:text-slate-400"
+        >
+          <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
+        </select>
+        <p class="mt-1 text-[11px] text-slate-400">
+          Tahun pelajaran mengikuti data siswa pada kelas yang dipilih.
+        </p>
+      </div>
+
       <!-- Pilih Kelas -->
       <div>
         <label class="text-xs font-semibold text-slate-600">Pilih Kelas</label>

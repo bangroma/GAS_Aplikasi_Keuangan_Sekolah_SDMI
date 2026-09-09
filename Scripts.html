@@ -7440,10 +7440,20 @@ var filteredSiswaData = [];
  * Fungsi untuk memfilter siswa berdasarkan jenis kelamin
  */
 function filterSiswaByJenisKelaminJS() {
-  var filterValue = document.getElementById('setting-filter-jk').value;
+  applySiswaFiltersJS();
+}
+
+function filterSiswaByTahunPelajaranJS() {
+  applySiswaFiltersJS();
+}
+
+function applySiswaFiltersJS() {
+  var filterJK = document.getElementById('setting-filter-jk');
+  var filterTahun = document.getElementById('setting-tahun-pelajaran');
   var container = document.getElementById('setting-siswa-container');
-  
-  // Jika belum ada data siswa, tampilkan pesan
+
+  if (!container) return;
+
   if (!allSiswaData || allSiswaData.length === 0) {
     container.innerHTML = `
       <div class="flex flex-col items-center justify-center h-64 text-slate-400">
@@ -7451,25 +7461,64 @@ function filterSiswaByJenisKelaminJS() {
         <p class="text-sm">Pilih kelas terlebih dahulu</p>
       </div>
     `;
+    filteredSiswaData = [];
+    updateSiswaCount();
     return;
   }
-  
-  // Filter data berdasarkan jenis kelamin
-  if (filterValue === 'ALL') {
-    filteredSiswaData = allSiswaData.slice();
-  } else {
-    filteredSiswaData = allSiswaData.filter(function(siswa) {
-      var jk = normalizeJenisKelamin(siswa.jenis_kelamin);
-      return jk === filterValue;
-    });
-  }
-  
-  // Render ulang daftar siswa dengan data yang sudah difilter
+
+  var jkValue = filterJK ? filterJK.value : 'ALL';
+  var tahunValue = filterTahun ? filterTahun.value : 'ALL';
+
+  filteredSiswaData = allSiswaData.filter(function(siswa) {
+    var cocokJK = jkValue === 'ALL' ||
+      normalizeJenisKelamin(siswa.jenis_kelamin) === jkValue;
+
+    var cocokTahun = tahunValue === 'ALL' ||
+      String(siswa.tahun_pelajaran || '') === String(tahunValue);
+
+    return cocokJK && cocokTahun;
+  });
+
   renderSiswaList(filteredSiswaData);
-  
-  // Update counter
   updateSiswaCount();
 }
+
+function populateTahunPelajaranOptionsJS() {
+  var select = document.getElementById('setting-tahun-pelajaran');
+  if (!select) return;
+
+  var tahunSet = {};
+
+  (allSiswaData || []).forEach(function(siswa) {
+    var tahun = String(siswa.tahun_pelajaran || '').trim();
+    if (tahun) {
+      tahunSet[tahun] = true;
+    }
+  });
+
+  var tahunList = Object.keys(tahunSet).sort(function(a, b) {
+    return a.localeCompare(b, 'id', { numeric: true });
+  });
+
+  select.innerHTML = '';
+
+  var optionAll = document.createElement('option');
+  optionAll.value = 'ALL';
+  optionAll.textContent = 'Semua Tahun Pelajaran';
+  select.appendChild(optionAll);
+
+  tahunList.forEach(function(tahun) {
+    var option = document.createElement('option');
+    option.value = tahun;
+    option.textContent = tahun;
+    select.appendChild(option);
+  });
+
+  select.disabled = tahunList.length === 0;
+  select.value = 'ALL';
+}
+
+// STAGE2_TAHUN_PELAJARAN_JS
 
 /**
  * Normalisasi jenis kelamin
@@ -7629,6 +7678,14 @@ function loadSiswaByKelasJS() {
     `;
     allSiswaData = [];
     filteredSiswaData = [];
+
+    var filterTahun = document.getElementById('setting-tahun-pelajaran');
+    if (filterTahun) {
+      filterTahun.innerHTML = '<option value="">-- Pilih Kelas Terlebih Dahulu --</option>';
+      filterTahun.value = '';
+      filterTahun.disabled = true;
+    }
+
     document.getElementById('setting-siswa-count').textContent = '0 dipilih';
     
     // Disable generate button
@@ -7661,16 +7718,15 @@ function loadSiswaByKelasJS() {
           checked: false
         };
       });
-      
-      // Reset filter ke ALL
+      // Reset filter jenis kelamin dan tahun pelajaran
       var filterSelect = document.getElementById('setting-filter-jk');
       if (filterSelect) filterSelect.value = 'ALL';
-      
+
+      populateTahunPelajaranOptionsJS();
+
       // Terapkan filter (ALL)
-      filteredSiswaData = allSiswaData.slice();
-      renderSiswaList(filteredSiswaData);
-      updateSiswaCount();
-      
+      applySiswaFiltersJS();
+
       // Reset checkbox "Pilih Semua"
       var checkAll = document.getElementById('setting-check-all');
       if (checkAll) {
@@ -7855,8 +7911,13 @@ function generateTagihanMassalJS() {
  * Reset filter siswa
  */
 function resetFilterSiswaJS() {
-  document.getElementById('setting-filter-jk').value = 'ALL';
-  filterSiswaByJenisKelaminJS();
+  var filterJK = document.getElementById('setting-filter-jk');
+  var filterTahun = document.getElementById('setting-tahun-pelajaran');
+
+  if (filterJK) filterJK.value = 'ALL';
+  if (filterTahun) filterTahun.value = 'ALL';
+
+  applySiswaFiltersJS();
 }
 
 </script>
