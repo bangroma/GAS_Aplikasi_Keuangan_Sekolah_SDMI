@@ -323,7 +323,11 @@ function generateTagihanMassal(payload) {
           );
         })
         .map(function (t) {
-          return normalizeText(t.id_siswa);
+          return (
+            normalizeText(t.tahun_pelajaran) +
+            "|" +
+            normalizeText(t.id_siswa)
+          );
         }),
     );
 
@@ -347,16 +351,19 @@ function generateTagihanMassal(payload) {
     let successCount = 0;
 
     idSiswaList.forEach(function (idSiswa) {
-      if (existingSet.has(idSiswa)) {
-        skippedCount++;
-        return;
-      }
-
       const siswa = siswaList.find(function (s) {
         return normalizeText(s.id_siswa) === idSiswa;
       });
 
       if (!siswa) {
+        skippedCount++;
+        return;
+      }
+
+      const duplicateKey =
+        normalizeText(siswa.tahun_pelajaran) + "|" + idSiswa;
+
+      if (existingSet.has(duplicateKey)) {
         skippedCount++;
         return;
       }
