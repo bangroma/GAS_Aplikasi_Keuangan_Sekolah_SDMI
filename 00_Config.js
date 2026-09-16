@@ -383,9 +383,7 @@ function previewMigrasiSiswaKeMembership(tahunPelajaran) {
     };
   }
 
-  const siswaList = getSheetDataAsObjects("Siswa").filter(function (siswa) {
-    return normalizeText(siswa.tahun_pelajaran) === tahunTarget;
-  });
+  const siswaList = getSheetDataAsObjects("Siswa");
 
   const membershipList = getSheetDataAsObjects(
     "Siswa_Tahun_Pelajaran"
@@ -409,10 +407,10 @@ function previewMigrasiSiswaKeMembership(tahunPelajaran) {
 
   siswaList.forEach(function (siswa) {
     const idSiswa = normalizeText(siswa.id_siswa);
-    const tahun = normalizeText(siswa.tahun_pelajaran);
+    const tahun = tahunTarget;
     const kelas = normalizeText(siswa.kelas);
 
-    if (!idSiswa || !tahun || !kelas) {
+    if (!idSiswa || !kelas) {
       tidakValid++;
 
       data.push({
@@ -501,9 +499,7 @@ function migrasiSiswaKeMembership(tahunPelajaran) {
       };
     }
 
-    const siswaList = getSheetDataAsObjects("Siswa").filter(function (siswa) {
-      return normalizeText(siswa.tahun_pelajaran) === tahunTarget;
-    });
+    const siswaList = getSheetDataAsObjects("Siswa");
 
     const membershipList = getSheetDataAsObjects(
       "Siswa_Tahun_Pelajaran"
@@ -552,10 +548,10 @@ function migrasiSiswaKeMembership(tahunPelajaran) {
 
     siswaList.forEach(function (siswa) {
       const idSiswa = normalizeText(siswa.id_siswa);
-      const tahun = normalizeText(siswa.tahun_pelajaran);
+      const tahun = tahunTarget;
       const kelas = normalizeText(siswa.kelas);
 
-      if (!idSiswa || !tahun || !kelas) {
+      if (!idSiswa || !kelas) {
         invalid++;
         return;
       }
@@ -703,6 +699,540 @@ function auditSiswaMembership() {
 }
 
 // ============================================================
+// P1_MEMBERSHIP_BACKEND_CONTRACTS
+// Backend pemilihan dan penyimpanan membership siswa per tahun.
+// ============================================================
+
+function getKandidatSiswaMembership(tahunPelajaran) {
+  const tahunTarget = normalizeText(tahunPelajaran);
+  if (!tahunTarget) return { success:false, message:"Tahun pelajaran wajib diisi." };
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss.getSheetByName("Siswa")) {
+    return { success:false, message:"Sheet Siswa tidak ditemukan." };
+  }
+  if (!ss.getSheetByName("Siswa_Tahun_Pelajaran")) {
+    return {
+      success:false,
+      message:"Sheet Siswa_Tahun_Pelajaran belum ada. Jalankan setupDatabase()."
+    };
+  }
+
+  const siswaList = getSheetDataAsObjects("Siswa");
+  const memberships = getSheetDataAsObjects("Siswa_Tahun_Pelajaran");
+  const existing = new Set();
+
+  memberships.forEach(function(row) {
+    const id = normalizeText(row.id_siswa);
+    const tahun = normalizeText(row.tahun_pelajaran);
+    if (id && tahun) existing.add(id + "|" + tahun);
+  });
+
+  const data = siswaList
+    .map(function(siswa) {
+      const id = normalizeText(siswa.id_siswa);
+      if (!id) return null;
+
+      const sudah = existing.has(id + "|" + tahunTarget);
+
+      return {
+        status: sudah ? "SUDAH_TERDAFTAR" : "BELUM_TERDAFTAR",
+        id_siswa: id,
+        nisn: normalizeText(siswa.nisn),
+        nis: normalizeText(siswa.nis),
+        nama_lengkap: normalizeText(siswa.nama_lengkap),
+        jenis_kelamin: normalizeText(siswa.jenis_kelamin),
+        kelas_master: normalizeText(siswa.kelas),
+        tahun_pelajaran_master: normalizeText(siswa.tahun_pelajaran),
+        status_siswa_master: normalizeText(siswa.status_siswa),
+        id_potongan_default_master: normalizeText(siswa.id_potongan_default),
+        tahun_pelajaran_target: tahunTarget
+      };
+    })
+    .filter(Boolean);
+
+  return {
+    success:true,
+    tahun_pelajaran:tahunTarget,
+    total:data.length,
+    belum_terdaftar:data.filter(function(x) {
+      return x.status === "BELUM_TERDAFTAR";
+    }).length,
+    sudah_terdaftar:data.filter(function(x) {
+      return x.status === "SUDAH_TERDAFTAR";
+    }).length,
+    data:data
+  };
+}
+
+// ============================================================
+// P1_MEMBERSHIP_VALIDATION_HARDENED
+// Patch validasi membership siswa per tahun pelajaran.
+// ============================================================
+
+function validateSimpanMembershipSiswa_(
+  tahunPelajaran,
+  items,
+  siswaMap,
+  existing
+) {
+  const tahunTarget = normalizeText(tahunPelajaran);
+
+  if (!tahunTarget) {
+    throw new Error("Tahun pelajaran wajib diisi.");
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new Error("Minimal satu siswa harus dipilih.");
+  }
+
+  const validStatusSiswa = new Set([
+    "AKTIF",
+    "NONAKTIF",
+    "LULUS",
+    "PINDAH"
+  ]);
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const potonganSheet = ss.getSheetByName("Master_Potongan");
+  const potonganMap = {};
+
+  if (potonganSheet) {
+    getSheetDataAsObjects("Master_Potongan").forEach(function(row) {
+      const idPotongan = normalizeText(row.id_potongan);
+
+      if (idPotongan) {
+        potonganMap[idPotongan] = row;
+      }
+    });
+  }
+
+  const seen = new Set();
+  const result = [];
+
+  items.forEach(function(item, index) {
+    if (!item || typeof item !== "object") {
+      throw new Error(
+        "Data siswa pada baris " + (index + 1) + " tidak valid."
+      );
+    }
+
+    const idSiswa = normalizeText(item.id_siswa);
+
+    if (!idSiswa) {
+      throw new Error(
+        "ID siswa pada baris " + (index + 1) + " wajib diisi."
+      );
+    }
+
+    if (seen.has(idSiswa)) {
+      throw new Error(
+        "Siswa " + idSiswa + " dipilih lebih dari satu kali."
+      );
+    }
+
+    seen.add(idSiswa);
+
+    const siswa = siswaMap[idSiswa];
+
+    if (!siswa) {
+      throw new Error(
+        "Siswa " + idSiswa + " tidak ditemukan pada sheet Siswa."
+      );
+    }
+
+    const kelas = normalizeText(siswa.kelas);
+
+    if (!kelas) {
+      throw new Error(
+        "Kelas siswa " + idSiswa +
+        " belum tersedia pada sheet Siswa."
+      );
+    }
+
+    const membershipKey = idSiswa + "|" + tahunTarget;
+
+    if (existing.has(membershipKey)) {
+      throw new Error(
+        "Siswa " + idSiswa +
+        " sudah memiliki membership tahun " +
+        tahunTarget + "."
+      );
+    }
+
+    const statusSiswa =
+      normalizeText(siswa.status_siswa).toUpperCase();
+
+    if (statusSiswa && !validStatusSiswa.has(statusSiswa)) {
+      throw new Error(
+        "Status siswa " + idSiswa +
+        " tidak valid: " + statusSiswa +
+        ". Gunakan AKTIF, NONAKTIF, LULUS, atau PINDAH."
+      );
+    }
+
+    const idPotonganDefault =
+      normalizeText(siswa.id_potongan_default);
+
+    if (idPotonganDefault) {
+      if (!potonganSheet) {
+        throw new Error(
+          "Master_Potongan tidak ditemukan untuk id_potongan: " +
+          idPotonganDefault + "."
+        );
+      }
+
+      if (!potonganMap[idPotonganDefault]) {
+        throw new Error(
+          "id_potongan_default " + idPotonganDefault +
+          " untuk siswa " + idSiswa +
+          " tidak ditemukan pada Master_Potongan."
+        );
+      }
+    }
+
+    result.push({
+      id_keanggotaan: generateIdKeanggotaan_(),
+      id_siswa: idSiswa,
+      tahun_pelajaran: tahunTarget,
+      kelas: kelas,
+      status_siswa: statusSiswa,
+      id_potongan_default: idPotonganDefault,
+      tanggal_masuk: item.tanggal_masuk || "",
+      tanggal_keluar: item.tanggal_keluar || "",
+      keterangan: normalizeText(item.keterangan) ||
+        "Membership siswa per tahun pelajaran"
+    });
+  });
+
+  return result;
+}
+
+
+// ============================================================
+// END P1_MEMBERSHIP_VALIDATION_HARDENED
+// ============================================================
+
+function prepareMembershipValidation_(tahunPelajaran, items) {
+  const tahunTarget = normalizeText(tahunPelajaran);
+
+  if (!tahunTarget) {
+    throw new Error("Tahun pelajaran wajib diisi.");
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new Error("Minimal satu siswa harus dipilih.");
+  }
+
+  const siswaList = getSheetDataAsObjects("Siswa");
+  const memberships = getSheetDataAsObjects("Siswa_Tahun_Pelajaran");
+
+  const siswaMap = {};
+  siswaList.forEach(function(siswa) {
+    const id = normalizeText(siswa.id_siswa);
+    if (id) siswaMap[id] = siswa;
+  });
+
+  const existing = new Set();
+  memberships.forEach(function(row) {
+    const id = normalizeText(row.id_siswa);
+    const tahun = normalizeText(row.tahun_pelajaran);
+    if (id && tahun) {
+      existing.add(id + "|" + tahun);
+    }
+  });
+
+  const validated = validateSimpanMembershipSiswa_(
+    tahunTarget,
+    items,
+    siswaMap,
+    existing
+  );
+
+  return {
+    tahun_pelajaran: tahunTarget,
+    items: validated
+  };
+}
+
+function previewSimpanMembershipSiswa(tahunPelajaran, items) {
+  try {
+    const prepared = prepareMembershipValidation_(
+      tahunPelajaran,
+      items
+    );
+
+    return {
+      success:true,
+      mode:"PREVIEW",
+      tahun_pelajaran:prepared.tahun_pelajaran,
+      total:prepared.items.length,
+      data:prepared.items
+    };
+  } catch (err) {
+    return {
+      success:false,
+      message:err && err.message
+        ? err.message
+        : String(err)
+    };
+  }
+}
+
+function simpanMembershipSiswa(tahunPelajaran, items) {
+  const lock = LockService.getScriptLock();
+
+  try {
+    lock.waitLock(30000);
+
+    const prepared = prepareMembershipValidation_(
+      tahunPelajaran,
+      items
+    );
+
+    const sheet = SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName("Siswa_Tahun_Pelajaran");
+
+    if (!sheet) {
+      throw new Error(
+        "Sheet Siswa_Tahun_Pelajaran tidak ditemukan."
+      );
+    }
+
+    const lastColumn = sheet.getLastColumn();
+    const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0]
+      .map(function(header) {
+        return normalizeText(header);
+      });
+    const requiredHeaders = [
+      "id_keanggotaan",
+      "id_siswa",
+      "tahun_pelajaran",
+      "kelas",
+      "status_siswa",
+      "id_potongan_default",
+      "tanggal_masuk",
+      "tanggal_keluar",
+      "keterangan"
+    ];
+
+    requiredHeaders.forEach(function(header) {
+      if (headers.indexOf(header) === -1) {
+        throw new Error(
+          "Header wajib tidak ditemukan: " + header
+        );
+      }
+    });
+
+    const rows = prepared.items.map(function(item) {
+      return headers.map(function(header) {
+        return item[header] !== undefined
+          ? item[header]
+          : "";
+      });
+    });
+
+    if (rows.length > 0) {
+      sheet
+        .getRange(
+          sheet.getLastRow() + 1,
+          1,
+          rows.length,
+          headers.length
+        )
+        .setValues(rows);
+    }
+
+    return {
+      success:true,
+      mode:"SIMPAN",
+      tahun_pelajaran:prepared.tahun_pelajaran,
+      total:rows.length,
+      inserted:rows.length,
+      message:
+        rows.length +
+        " membership siswa berhasil disimpan untuk tahun " +
+        prepared.tahun_pelajaran + "."
+    };
+
+  } catch (err) {
+    return {
+      success:false,
+      message:err && err.message
+        ? err.message
+        : String(err)
+    };
+  } finally {
+    try {
+      lock.releaseLock();
+    } catch (e) {
+      // Abaikan jika lock sudah dilepas.
+    }
+  }
+}
+
+// ============================================================
+// END P1_MEMBERSHIP_BACKEND_CONTRACTS
+
+// ============================================================
+// P1 TEST - GET KANDIDAT MEMBERSHIP SUMMARY
+// READ-ONLY
+// ============================================================
+
+// P1_TEST_GET_KANDIDAT_MEMBERSHIP_SUMMARY
+function testP1GetKandidatMembershipSummary() {
+  const tahunTarget = "2027/2028";
+
+  const result = getKandidatSiswaMembership(tahunTarget);
+
+  const summary = {
+    success: result.success,
+    tahun_pelajaran: result.tahun_pelajaran || tahunTarget,
+    total: result.total || 0,
+    belum_terdaftar: result.belum_terdaftar || 0,
+    sudah_terdaftar: result.sudah_terdaftar || 0,
+    message: result.message || ""
+  };
+
+  Logger.log(JSON.stringify(summary, null, 2));
+  return summary;
+}
+
+// ============================================================
+// END P1 TEST - GET KANDIDAT MEMBERSHIP SUMMARY
+// ============================================================
+
+// ============================================================
+
+// ============================================================
+
+// ============================================================
+
+
+// ============================================================
+
+
+// ============================================================
+
+
+// ============================================================
+// P1 TEST 4 - DUPLICATE MEMBERSHIP PROTECTION
+// ============================================================
+
+function testP1DuplicateMembership() {
+  const tahunTarget = '2027/2028';
+
+  const previewBefore = previewMigrasiSiswaKeMembership(tahunTarget);
+
+  const migrationFirst = migrasiSiswaKeMembership(tahunTarget);
+  const auditAfterFirst = auditSiswaMembership();
+
+  const migrationSecond = migrasiSiswaKeMembership(tahunTarget);
+  const auditAfterSecond = auditSiswaMembership();
+
+  const result = {
+    success: true,
+    tahun_pelajaran: tahunTarget,
+    preview_before: previewBefore,
+    migration_first: migrationFirst,
+    migration_second: migrationSecond,
+    audit_after_first: auditAfterFirst,
+    audit_after_second: auditAfterSecond
+  };
+
+  Logger.log(JSON.stringify(result, null, 2));
+  return result;
+}
+
+// ============================================================
+// END P1 TEST 4 - DUPLICATE MEMBERSHIP PROTECTION
+// ============================================================
+// ============================================================
+// P1 TEST 4 SUMMARY - READ ONLY
+// ============================================================
+
+function testP1DuplicateMembershipSummary() {
+  const tahunTarget = "2027/2028";
+
+  const siswaList = getSheetDataAsObjects("Siswa");
+  const membershipList = getSheetDataAsObjects("Siswa_Tahun_Pelajaran");
+
+  const targetMembership = membershipList.filter(function(row) {
+    return normalizeText(row.tahun_pelajaran) === tahunTarget;
+  });
+
+  const uniqueKeys = {};
+  const duplicateKeys = {};
+  const invalidRows = [];
+  const masterIds = {};
+
+  siswaList.forEach(function(siswa) {
+    const idSiswa = normalizeText(siswa.id_siswa);
+    if (idSiswa) masterIds[idSiswa] = true;
+  });
+
+  targetMembership.forEach(function(row, index) {
+    const idSiswa = normalizeText(row.id_siswa);
+    const tahun = normalizeText(row.tahun_pelajaran);
+    const kelas = normalizeText(row.kelas);
+    const key = idSiswa + "|" + tahun;
+
+    if (!idSiswa || !tahun || !kelas) {
+      invalidRows.push({
+        row: index + 2,
+        id_siswa: idSiswa,
+        tahun_pelajaran: tahun,
+        kelas: kelas
+      });
+    }
+
+    if (uniqueKeys[key]) {
+      duplicateKeys[key] = (duplicateKeys[key] || 1) + 1;
+    } else {
+      uniqueKeys[key] = true;
+    }
+  });
+
+  const duplicateCount = Object.keys(duplicateKeys).length;
+
+  const orphanCount = targetMembership.filter(function(row) {
+    return !masterIds[normalizeText(row.id_siswa)];
+  }).length;
+
+  const audit = auditSiswaMembership();
+
+  const result = {
+    success: true,
+    tahun_pelajaran: tahunTarget,
+    total_siswa_master: siswaList.length,
+    total_membership_target: targetMembership.length,
+    unique_membership_keys_target: Object.keys(uniqueKeys).length,
+    duplicate_key_count_target: duplicateCount,
+    duplicate_keys_target: duplicateKeys,
+    invalid_row_count_target: invalidRows.length,
+    orphan_membership_count_target: orphanCount,
+    expected_total_target: siswaList.length,
+    count_matches_master: targetMembership.length === siswaList.length,
+    audit_sehat: audit.sehat,
+    audit_summary: {
+      total_membership: audit.total_membership,
+      unique_membership: audit.unique_membership,
+      duplicate_id_siswa_tahun: audit.duplicate_id_siswa_tahun,
+      membership_tanpa_id_siswa: audit.membership_tanpa_id_siswa,
+      membership_tanpa_tahun_pelajaran: audit.membership_tanpa_tahun_pelajaran,
+      orphan_membership: audit.orphan_membership
+    }
+  };
+
+  Logger.log(JSON.stringify(result, null, 2));
+  return result;
+}
+
+// ============================================================
+// END P1 TEST 4 SUMMARY - READ ONLY
+// ============================================================
+
 // END P1_MEMBERSHIP_SCHEMA_AND_MIGRATION
 // ============================================================
 
