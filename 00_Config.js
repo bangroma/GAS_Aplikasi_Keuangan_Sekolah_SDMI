@@ -1120,20 +1120,155 @@ function testP1GetKandidatMembershipSummary() {
 // P1 TEST 4 - DUPLICATE MEMBERSHIP PROTECTION
 // ============================================================
 
+// ============================================================
+// P1 TEST - MIGRATION EXISTING MEMBERSHIP
+// ============================================================
+
+function testP1MigrationExistingMembership() {
+  const tahunTarget = '2027/2028';
+
+  const membershipList =
+    getSheetDataAsObjects('Siswa_Tahun_Pelajaran') || [];
+
+  const membershipTarget = membershipList.filter(function(item) {
+    return normalizeText(item.tahun_pelajaran) === tahunTarget;
+  });
+
+  const expectedSkipped = membershipTarget.length;
+
+  const result = migrasiSiswaKeMembership(tahunTarget);
+
+  const actualInserted = Number(result && result.inserted || 0);
+  const actualSkipped = Number(result && result.skipped || 0);
+  const actualInvalid = Number(result && result.invalid || 0);
+
+  const passed =
+    !!result &&
+    result.success === true &&
+    actualInserted === 0 &&
+    actualSkipped === expectedSkipped &&
+    actualInvalid === 0;
+
+  const output = {
+    success: passed,
+    test: 'P1 Migration Existing Membership',
+    tahun_pelajaran: tahunTarget,
+    expected: {
+      inserted: 0,
+      skipped: expectedSkipped,
+      invalid: 0
+    },
+    actual: result
+  };
+
+  Logger.log(JSON.stringify(output, null, 2));
+  return output;
+}
+
+// P1 TEST 4 - DUPLICATE MEMBERSHIP ASSERTION FIX
 function testP1DuplicateMembership() {
   const tahunTarget = '2027/2028';
 
   const previewBefore = previewMigrasiSiswaKeMembership(tahunTarget);
 
-  const migrationFirst = migrasiSiswaKeMembership(tahunTarget);
-  const auditAfterFirst = auditSiswaMembership();
+  if (!previewBefore || previewBefore.success !== true) {
+    throw new Error(
+      'Test 4 FAIL: preview sebelum migrasi tidak berhasil.'
+    );
+  }
 
-  const migrationSecond = migrasiSiswaKeMembership(tahunTarget);
-  const auditAfterSecond = auditSiswaMembership();
+  const expectedExisting =
+    Number(previewBefore.sudah_ada || 0);
+
+  const migrationFirst =
+    migrasiSiswaKeMembership(tahunTarget);
+
+  const auditAfterFirst =
+    auditSiswaMembership();
+
+  const migrationSecond =
+    migrasiSiswaKeMembership(tahunTarget);
+
+  const auditAfterSecond =
+    auditSiswaMembership();
+
+  const checks = {
+    preview_success:
+      previewBefore.success === true,
+
+    first_success:
+      migrationFirst &&
+      migrationFirst.success === true,
+
+    second_success:
+      migrationSecond &&
+      migrationSecond.success === true,
+
+    first_inserted_zero:
+      Number(migrationFirst.inserted) === 0,
+
+    second_inserted_zero:
+      Number(migrationSecond.inserted) === 0,
+
+    first_invalid_zero:
+      Number(migrationFirst.invalid) === 0,
+
+    second_invalid_zero:
+      Number(migrationSecond.invalid) === 0,
+
+    first_skipped_matches_existing:
+      Number(migrationFirst.skipped) === expectedExisting,
+
+    second_skipped_matches_existing:
+      Number(migrationSecond.skipped) === expectedExisting,
+
+    audit_first_no_duplicates:
+      auditAfterFirst &&
+      Number(auditAfterFirst.duplicate_id_siswa_tahun || 0) === 0,
+
+    audit_second_no_duplicates:
+      auditAfterSecond &&
+      Number(auditAfterSecond.duplicate_id_siswa_tahun || 0) === 0,
+
+    audit_first_no_orphans:
+      auditAfterFirst &&
+      Number(auditAfterFirst.orphan_membership_count || 0) === 0,
+
+    audit_second_no_orphans:
+      auditAfterSecond &&
+      Number(auditAfterSecond.orphan_membership_count || 0) === 0,
+
+    audit_first_no_missing_id:
+      auditAfterFirst &&
+      Number(auditAfterFirst.membership_tanpa_id_siswa || 0) === 0,
+
+    audit_second_no_missing_id:
+      auditAfterSecond &&
+      Number(auditAfterSecond.membership_tanpa_id_siswa || 0) === 0,
+
+    audit_first_no_missing_year:
+      auditAfterFirst &&
+      Number(auditAfterFirst.membership_tanpa_tahun_pelajaran || 0) === 0,
+
+    audit_second_no_missing_year:
+      auditAfterSecond &&
+      Number(auditAfterSecond.membership_tanpa_tahun_pelajaran || 0) === 0
+  };
+
+  const failedChecks = Object.keys(checks)
+    .filter(function(key) {
+      return checks[key] !== true;
+    });
+
+  const success = failedChecks.length === 0;
 
   const result = {
-    success: true,
+    success: success,
+    test: 'P1 Duplicate Membership',
     tahun_pelajaran: tahunTarget,
+    expected_existing: expectedExisting,
+    checks: checks,
+    failed_checks: failedChecks,
     preview_before: previewBefore,
     migration_first: migrationFirst,
     migration_second: migrationSecond,
@@ -1142,6 +1277,13 @@ function testP1DuplicateMembership() {
   };
 
   Logger.log(JSON.stringify(result, null, 2));
+
+  if (!success) {
+    throw new Error(
+      'Test 4 FAIL: ' + failedChecks.join(', ')
+    );
+  }
+
   return result;
 }
 
