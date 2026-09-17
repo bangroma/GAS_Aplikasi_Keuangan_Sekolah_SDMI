@@ -1076,6 +1076,37 @@ function simpanMembershipSiswa(tahunPelajaran, items) {
 // END P1_MEMBERSHIP_BACKEND_CONTRACTS
 
 // ============================================================
+// P1 TEST - AUDIT MEMBERSHIP SUMMARY
+// READ-ONLY
+// ============================================================
+// P1_TEST_AUDIT_MEMBERSHIP_SUMMARY
+function testP1AuditMembershipSummary() {
+  const result = auditSiswaMembership();
+
+  const summary = {
+    success: result && result.success === true,
+    total_siswa: Number(result && result.total_siswa || 0),
+    total_membership: Number(result && result.total_membership || 0),
+    unique_membership: Number(result && result.unique_membership || 0),
+    duplicate_id_siswa_tahun:
+      Number(result && result.duplicate_id_siswa_tahun || 0),
+    membersip_tanpa_id_siswa:
+      Number(result && result.membership_tanpa_id_siswa || 0),
+    membership_tanpa_tahun_pelajaran:
+      Number(result && result.membership_tanpa_tahun_pelajaran || 0),
+    orphan_membership:
+      Number(result && result.orphan_membership || 0)
+  };
+
+  Logger.log(JSON.stringify(summary, null, 2));
+  return summary;
+}
+
+// ============================================================
+// END P1 TEST - AUDIT MEMBERSHIP SUMMARY
+// ============================================================
+
+// ============================================================
 // P1 TEST - GET KANDIDAT MEMBERSHIP SUMMARY
 // READ-ONLY
 // ============================================================
